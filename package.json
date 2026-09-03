@@ -1,0 +1,17 @@
+{
+  "name": "pss-ai-pmo",
+  "version": "0.0.0",
+  "private": true,
+  "description": "部門 PMO：整合 Google Apps Script 專案管理／日報／記錄。GAS 開發工具環境（clasp 部署 + ESLint 驗證）。",
+  "scripts": {
+    "lint": "eslint --no-error-on-unmatched-pattern \"gas/**/*.{js,gs}\"",
+    "clasp": "clasp"
+  },
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@google/clasp": "^3.4.1",
+    "@types/google-apps-script": "^2.0.12",
+    "eslint": "^10.9.1"
+  }
+}
