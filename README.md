@@ -1,9 +1,19 @@
 # PssAiPmo
 
-部門 PMO：整合 Google Apps Script 專案管理／日報／記錄，並對齊雲端與 NAS 備份。
+部門專案管理：Google Apps Script Web App + 試算表主檔 + Drive 檔案 + 手動 NAS 備份。
 
-## 目前狀態
+## 目前測試版
 
-三版測試程式待匯入後，由 AI 分析統整為單一最新版（共用同一試算表）。
+**統整最新版 V23.0.0** 在 [`gas/unified/`](gas/unified/)。
 
-請先依 [`gas/PROVIDE_HERE.md`](gas/PROVIDE_HERE.md) 提供程式1–3原始碼。
+三版原始碼已歸檔：
+
+- `gas/v1/`　V20.5 R5.2 工作回報與任務流程修正
+- `gas/v2/`　V20.5 R5.3 完整更新
+- `gas/v3/`　V22.5.0 模組化完整程式
+
+文件：
+
+- [三版分析與統整說明](docs/V23_三版分析與統整說明.md)
+- [安裝與測試](docs/V23_安裝與測試.md)
+- [功能對照表](docs/feature-matrix.md)

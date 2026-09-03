@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <title>PSS AI-PMO V22.5.0</title>
+  <?!= v21Include_('Styles'); ?>
+</head>
+<body>
+  <noscript><div style="padding:20px;background:#fff1f0;color:#b42318;font-weight:800">瀏覽器未啟用 JavaScript，PSS AI-PMO 無法執行。</div></noscript>
+  <header class="topbar">
+    <div><div class="eyebrow">PSS AI-PMO</div><h1>整合專案工作台 <span>V<?= version ?></span></h1></div>
+    <div class="header-actions">
+      <button class="button secondary" id="newProjectBtn">新增專案</button>
+      <button class="button secondary" id="newWorkBtn">新增工作</button>
+      <button class="button primary" id="newReportBtn">新增回報</button>
+    </div>
+  </header>
+  <main>
+    <section class="search-panel">
+      <label for="projectSearch">專案／工作搜尋</label>
+      <input id="projectSearch" autocomplete="off" placeholder="輸入場地、專案、事件、人員或關鍵字即時篩選">
+      <div class="hint" id="searchHint">頁面已啟動，正在連線正式資料庫…</div>
+    </section>
+    <section class="summary" id="summary"></section>
+    <section id="announcements"></section>
+    <nav class="tabs" aria-label="主功能">
+      <button class="tab active" data-tab="work">目前工作</button>
+      <button class="tab" data-tab="calendar">工作日曆</button>
+      <button class="tab" data-tab="projects">專案管理</button>
+      <button class="tab" data-tab="training">教育訓練</button>
+      <button class="tab" data-tab="thursday">週四會議</button>
+      <button class="tab" data-tab="quotes">報價設備</button>
+    </nav>
+    <section id="workView" class="view"></section>
+    <section id="calendarView" class="view hidden"></section>
+    <section id="projectsView" class="view hidden"></section>
+    <section id="trainingView" class="view hidden"></section>
+    <section id="thursdayView" class="view hidden"></section>
+    <section id="quotesView" class="view hidden"></section>
+  </main>
+  <dialog id="calendarExpandDialog" class="dialog wide"><div id="calendarExpandBody"></div></dialog>
+  <dialog id="detailDialog" class="dialog wide"><div id="detailBody"></div></dialog>
+  <dialog id="workDialog" class="dialog"><div id="workBody"></div></dialog>
+  <dialog id="reportDialog" class="dialog"><div id="reportBody"></div></dialog>
+  <dialog id="projectDialog" class="dialog"><div id="projectBody"></div></dialog>
+  <dialog id="trainingDialog" class="dialog wide"><div id="trainingBody"></div></dialog>
+  <dialog id="equipmentDialog" class="dialog"><div id="equipmentBody"></div></dialog>
+  <dialog id="quoteDialog" class="dialog"><div id="quoteBody"></div></dialog>
+  <dialog id="meetingItemDialog" class="dialog"><div id="meetingItemBody"></div></dialog>
+  <dialog id="projectRelationDialog" class="dialog"><div id="projectRelationBody"></div></dialog>
+  <dialog id="fileMoveDialog" class="dialog"><div id="fileMoveBody"></div></dialog>
+  <dialog id="imagePreviewDialog" class="dialog image-preview-dialog"><div id="imagePreviewBody"></div></dialog>
+  <datalist id="peopleList"></datalist>
+  <datalist id="eventTitleList"></datalist>
+  <datalist id="systemTypeList"></datalist>
+  <div id="toast" class="toast" role="status"></div>
+  <div id="loading" class="loading hidden"><div class="spinner"></div><span>處理中…</span></div>
+  <?!= v21Include_('App'); ?>
+</body>
+</html>

@@ -1,0 +1,76 @@
+{
+  "version": "V20.5 R5.3",
+  "syntax": {
+    "Training_Center_R48.gs": "pass",
+    "Code.gs": "pass",
+    "R53_Feature_Guide.gs": "pass",
+    "R53_Workflow_Training_Meeting.gs": "pass",
+    "Work_Knowledge_R4.gs": "pass",
+    "R47_Workflow.gs": "pass",
+    "V204_Upgrade.gs": "pass",
+    "R53_Installer.gs": "pass",
+    "Index.html": "pass"
+  },
+  "frontend": {
+    "title_r53": true,
+    "help_button": true,
+    "help_modal": true,
+    "task_duplicate_visible": true,
+    "task_report_action": true,
+    "task_delete_action": true,
+    "project_report_action": true,
+    "weekly_meeting_label": true,
+    "training_system_first": true,
+    "existing_attachment_hint": true
+  },
+  "backend": {
+    "required_functions": {
+      "getTaskDrawerR4": true,
+      "getProjectDrawerR4": true,
+      "getTaskEditorR53": true,
+      "updateTaskR53": true,
+      "deleteTaskR53": true,
+      "findTaskDuplicatesR53": true,
+      "getProjectReportSettingR53": true,
+      "saveProjectReportSettingR53": true,
+      "getWeeklyMeetingWorkspaceR53": true,
+      "saveWeeklyMeetingSelectionR53": true,
+      "saveMeetingWorkItemR53": true,
+      "deleteMeetingWorkItemR53": true,
+      "reportMeetingWorkItemR53": true,
+      "generateWeeklyMeetingMinutesR53": true,
+      "getTrainingCenterR48": true,
+      "getTrainingCourseR48": true,
+      "getTrainingCenterR53": true,
+      "getTrainingCourseR53": true,
+      "saveTrainingCourseR53": true,
+      "getFeatureGuideR53": true,
+      "getRuntimeHealthR53": true,
+      "saveDailyReportV17": true,
+      "createTasksMultiOwnerV17": true,
+      "updateTaskWithFilesR42": true
+    },
+    "missing": [],
+    "duplicate_function_names": {
+      "isManager_": 2,
+      "requireManager_": 2,
+      "effectivePermissionMapV192_": 2,
+      "accessFor_": 2,
+      "requireFeatureV192_": 2,
+      "hasFeatureV192_": 2,
+      "buildAccessV1921_": 2,
+      "registerAccountV17": 2,
+      "listOnlineUsersV20": 2,
+      "createQuickLoginV20": 2,
+      "requireUser_": 2,
+      "loginV17": 2,
+      "getCurrentUserV17": 2,
+      "recordLoginActivityR42": 2,
+      "heartbeatV20": 2
+    }
+  },
+  "notes": [
+    "Duplicate function names may reflect intentional later-version overrides in legacy Code.gs; critical R5.3 APIs are checked separately."
+  ],
+  "ok": true
+}

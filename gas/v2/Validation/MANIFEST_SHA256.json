@@ -1,0 +1,92 @@
+[
+  {
+    "path": "Documentation/FUNCTION_MAP_R53.md",
+    "size": 1519,
+    "sha256": "7ee3e1f02a48880d8abb3768ba491a9dda370ef906068a6b51c1496c86c3acdf"
+  },
+  {
+    "path": "Documentation/README_部署與功能說明.md",
+    "size": 3115,
+    "sha256": "acdabac1ef2d1225f9ed6d69a07857342594b22cf88e4cd4e1101321046447bf"
+  },
+  {
+    "path": "Documentation/使用者快速操作.md",
+    "size": 1074,
+    "sha256": "c6558240b389f77d36de72d3851a6a52a745cfa0bb2aeb69754aba097545e029"
+  },
+  {
+    "path": "Patch/R53_FEATURE_HELP.html",
+    "size": 6672,
+    "sha256": "df25cfef96695b55757f22f2b40532fd723a74fbcd77c8ab17a5661f23f69875"
+  },
+  {
+    "path": "Patch/R53_FRONTEND_PATCH_BASE.html",
+    "size": 39095,
+    "sha256": "75357cba1b1549ce31274719801aeb3c559cb555803b056ec75a262c7a07e008"
+  },
+  {
+    "path": "Source/Code.gs",
+    "size": 399239,
+    "sha256": "010e2c7f743b1b1ba2d3dcc7282903049554a3486222c17c1d2c88a7500dcb17"
+  },
+  {
+    "path": "Source/Index.html",
+    "size": 448545,
+    "sha256": "882bd5625a14dedb86757a88e059a4d168fce04078f7e3f6936de6424e82d13f"
+  },
+  {
+    "path": "Source/R47_Workflow.gs",
+    "size": 4460,
+    "sha256": "f16ca90358005874a937b411437804ceb88f2fb172408a28562286ac7344565a"
+  },
+  {
+    "path": "Source/R53_Feature_Guide.gs",
+    "size": 3206,
+    "sha256": "26d1051d5763cfc8eec3afb7545bc420f4a270b004319d6b5f2934e73d695169"
+  },
+  {
+    "path": "Source/R53_Installer.gs",
+    "size": 1620,
+    "sha256": "2194f4361e6fe30ce422f432f3e1773f48111aa920d93e48865311e5eea1e5af"
+  },
+  {
+    "path": "Source/R53_Workflow_Training_Meeting.gs",
+    "size": 27895,
+    "sha256": "168e03a2c254b80654c1c88631abd426f90aa1135ebd7b8a04d45031501daa50"
+  },
+  {
+    "path": "Source/Training_Center_R48.gs",
+    "size": 36528,
+    "sha256": "51b0f90337849b94b915fd729657af63c449bfecd63054bf4eb1787583b63699"
+  },
+  {
+    "path": "Source/V204_Upgrade.gs",
+    "size": 37506,
+    "sha256": "22a48fc269948210475a4901933d94eb8bde8c50db7705e0f59b73375abd4ea7"
+  },
+  {
+    "path": "Source/Work_Knowledge_R4.gs",
+    "size": 42059,
+    "sha256": "f7bb610a3176705a744bb54663d6732f9654c59090c429438eceb8476525a184"
+  },
+  {
+    "path": "Source/appsscript.json",
+    "size": 116,
+    "sha256": "bc7dd705b147c4c3ab5216ec3c479ee5e94ccbba776fd9df60d81fc3361e341e"
+  },
+  {
+    "path": "VERSION.txt",
+    "size": 62,
+    "sha256": "ae1ba5c636a9abcb4a9032437a7990040f4bc73db12159cd9f69a706e3e0e22e"
+  },
+  {
+    "path": "Validation/VALIDATION_R53.json",
+    "size": 2294,
+    "sha256": "7226e4dc7f99d6f0565d66cb0569c88eeb5e027cc02b175303bab8eb1c6d746c"
+  },
+  {
+    "path": "Validation/VALIDATION_R53.md",
+    "size": 461,
+    "sha256": "507c4cd4dd7623b6fcb14b1762adb3bf323d45bbb74da4baf943cb68b2c9574a"
+  }
+]

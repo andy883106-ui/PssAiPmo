@@ -1,0 +1,7 @@
+{
+  "scriptId": "請填 Apps Script 專案設定中的指令碼 ID",
+  "rootDir": ".",
+  "scriptExtensions": [".js", ".gs"],
+  "htmlExtensions": [".html"],
+  "jsonExtensions": [".json"]
+}

@@ -1,0 +1,4 @@
+PSS AI-PMO V20.5 R5.2 Work Feedback
+Build date: 2026-08-13 Asia/Taipei
+Upgrade type: additive patch over the current main PMO Apps Script HEAD
+Database deletion: none

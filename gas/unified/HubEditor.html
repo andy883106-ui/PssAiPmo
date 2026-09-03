@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HUB 圖檔編輯器 v10</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;height:100%;font-family:"Microsoft JhengHei","Noto Sans TC",Arial,sans-serif;color:#222}
+body{background:#edf0f3;overflow:hidden}.app{height:100vh;display:flex;flex-direction:column}
+header{height:58px;background:#fff;border-bottom:1px solid #d8dde2;display:flex;align-items:center;padding:0 16px;gap:12px}
+header h1{font-size:18px;margin:0}.sub{font-size:12px;color:#777}.spacer{flex:1}
+button{font:inherit;border:1px solid #cdd3d8;background:#fff;border-radius:6px;padding:7px 11px;cursor:pointer;font-size:12px;font-weight:600}
+button.primary{background:#198754;border-color:#198754;color:#fff}button.danger{color:#b42318;border-color:#e0b0aa}
+button:hover{filter:brightness(.97)}.layout{flex:1;min-height:0;display:grid;grid-template-columns:210px 1fr 300px}
+aside{background:#fff;overflow:auto;padding:12px}.left{border-right:1px solid #d8dde2}.right{border-left:1px solid #d8dde2}
+.section{border-bottom:1px solid #e7eaed;padding-bottom:13px;margin-bottom:13px}
+h2{font-size:13px;margin:2px 0 9px}.hint,.small{font-size:11px;color:#737b82;line-height:1.45}
+.drop{border:1.5px dashed #adb6bd;border-radius:7px;background:#fafbfc;padding:12px;text-align:center;color:#68727a;font-size:11px}
+.drop.drag{background:#effbf4;border-color:#198754}
+.row{display:flex;gap:6px}.row>*{flex:1}
+input[type=text],input[type=number],select{width:100%;height:33px;border:1px solid #cdd3d8;border-radius:6px;padding:5px 8px;background:#fff;font-size:12px}
+input[type=color]{width:100%;height:33px;padding:2px;border:1px solid #cdd3d8;border-radius:6px;background:#fff}
+label{font-size:11px;font-weight:700;display:block;margin:8px 0 4px}
+.check{font-weight:400;display:flex;align-items:center;gap:5px}
+.tenant-list{display:flex;flex-direction:column;gap:7px}.tenant-card{border:2px solid #e1e5e8;border-radius:7px;padding:4px;height:65px;cursor:pointer;position:relative}
+.tenant-card.active{border-color:#198754;background:#f4fff8}.tenant-card img{width:100%;height:100%;object-fit:contain}.tenant-card .x{position:absolute;right:3px;top:3px;border:0;background:#fff;color:#b42318;padding:1px 5px;font-size:11px}
+.main{min-width:0;min-height:0;display:flex;flex-direction:column}.stagebar{height:44px;background:#f8f9fa;border-bottom:1px solid #d8dde2;display:flex;align-items:center;padding:0 10px;gap:6px}
+.stagebar .info{margin-left:auto;color:#747d84;font-size:11px}.viewport{flex:1;min-height:0;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#dfe4e8}
+.wrap{width:971px;height:221px;position:relative;flex:none;transform-origin:center center}.canvas{width:971px;height:221px;position:relative;background:#fff;overflow:hidden;box-shadow:0 6px 24px #0003}
+#bg{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;display:none;pointer-events:none}
+.obj{position:absolute;user-select:none;touch-action:none;cursor:move}.obj img{width:100%;height:100%;object-fit:contain;display:block;pointer-events:none}
+.textObj{white-space:pre;line-height:1;cursor:move}.selection{position:absolute;border:1.5px dashed #198754;z-index:20;pointer-events:none;display:none}
+.handle{position:absolute;width:11px;height:11px;border:2px solid #198754;background:#fff;border-radius:2px;pointer-events:auto}
+.handle.tl{left:-7px;top:-7px;cursor:nwse-resize}.handle.tr{right:-7px;top:-7px;cursor:nesw-resize}.handle.bl{left:-7px;bottom:-7px;cursor:nesw-resize}.handle.br{right:-7px;bottom:-7px;cursor:nwse-resize}
+.empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#7b858d;pointer-events:none}.empty strong{font-size:16px;margin-bottom:5px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.status{font-size:11px;color:#68727a;min-height:18px}
+@media(max-width:950px){.layout{grid-template-columns:170px 1fr}.right{position:absolute;right:0;top:58px;bottom:0;width:300px;z-index:50;box-shadow:-5px 0 18px #0002}.right.hide{display:none}}
+</style>
+</head>
+<body>
+<div class="app">
+<header><h1>HUB 圖檔編輯器</h1><span class="sub">971 × 221 px</span><span class="spacer"></span><button id="panelBtn">設定</button><button class="primary" id="exportBtn">匯出 PNG</button></header>
+<div class="layout">
+<aside class="left">
+<div class="section">
+<h2>① 第一步：底圖</h2>
+<div class="drop" id="bgDrop">拖曳底圖／Ctrl+V 貼上</div>
+<input id="bgFile" type="file" accept="image/*" hidden>
+<div class="row" style="margin-top:7px"><button class="primary" id="bgUpload">上傳底圖</button><button class="danger" id="bgDelete">刪除底圖</button></div>
+<div class="small" style="margin-top:6px">開啟程式時不載入任何舊資料，也不使用 localStorage 暫存。</div>
+</div>
+<div class="section">
+<h2>② 租戶檔案</h2>
+<button class="primary" id="newTenant" style="width:100%">＋ 新增租戶</button>
+<button class="danger" id="deleteTenant" style="width:100%;margin-top:6px">刪除目前租戶</button>
+<div class="tenant-list" id="tenantList" style="margin-top:8px"></div>
+</div>
+<div class="section">
+<h2>③ 增加文字</h2><button class="primary" id="addText" style="width:100%">＋ 增加文字</button>
+</div>
+</aside>
+
+<main class="main">
+<div class="stagebar"><button id="fitBtn">整頁顯示</button><button id="oneBtn">100%</button><button id="centerBtn">置中</button><span class="info">圖片／文字：直接拖曳；四角拉取大小</span></div>
+<div class="viewport" id="viewport">
+<div class="wrap" id="wrap"><div class="canvas" id="canvas">
+<img id="bg">
+<div class="obj" id="imageObj" style="display:none"><img id="imageInner"></div>
+<div class="obj textObj" id="textObj" style="display:none"></div>
+<div class="selection" id="selection"><i class="handle tl" data-c="tl"></i><i class="handle tr" data-c="tr"></i><i class="handle bl" data-c="bl"></i><i class="handle br" data-c="br"></i></div>
+<div class="empty" id="empty"><strong>請先上傳底圖</strong><span>完成第一步後，再新增租戶圖片或文字</span></div>
+</div></div>
+</div>
+</main>
+
+<aside class="right" id="right">
+<div class="section">
+<h2>目前內容</h2>
+<select id="kind"><option value="image">租戶圖片／公司 LOGO</option><option value="text">文字</option></select>
+</div>
+<div class="section" id="imagePanel">
+<h2>圖檔</h2>
+<div class="drop" id="imageDrop">拖曳、上傳或 Ctrl+V 貼上租戶圖片／公司 LOGO</div>
+<input id="imageFile" type="file" accept="image/*" hidden>
+<div class="row" style="margin-top:7px"><button class="primary" id="imageUpload">上傳圖檔</button><button class="danger" id="imageDelete">刪除圖檔</button></div>
+<div class="grid2">
+<div><label>X</label><input id="x" type="number"></div><div><label>Y</label><input id="y" type="number"></div>
+<div><label>寬度</label><input id="w" type="number" min="1"></div><div><label>高度</label><input id="h" type="number" min="1"></div>
+</div>
+<label class="check"><input id="lock" type="checkbox" checked> 鎖定比例</label>
+<div class="row" style="margin-top:7px"><button id="trim">最小化圖片留白</button><button id="centerImage">置中圖片</button></div>
+</div>
+<div class="section" id="textPanel">
+<h2>文字</h2><label>內容</label><input id="text" type="text" placeholder="輸入文字">
+<div class="grid2"><div><label>大小 px</label><input id="fontSize" type="number" min="8" max="200" value="20"></div><div><label>字距 px</label><input id="letter" type="number" value="0"></div></div>
+<label>字型</label><select id="font"><option value='"Noto Sans TC","Microsoft JhengHei",sans-serif'>Noto Sans TC</option><option value='"Microsoft JhengHei",sans-serif'>微軟正黑體</option><option value="Arial,sans-serif">Arial</option><option value="sans-serif">Sans Serif</option></select>
+<label>顏色</label><input id="color" type="color" value="#323232">
+</div>
+<button class="danger" id="deleteSelected" style="width:100%">刪除目前選取內容</button>
+<div class="status" id="status"></div>
+</aside>
+</div></div>
+
+<script>
+"use strict";
+const W=971,H=221;
+let project={bg:"",image:"",imageOriginal:"",ix:355,iy:60,iw:260,ih:100,lock:true,text:"",tx:485,ty:95,fs:20,letter:0,font:'"Noto Sans TC","Microsoft JhengHei",sans-serif',color:"#323232"};
+let tenants=[],current=-1,selected="image",drag=null,zoom=1;
+const $=id=>document.getElementById(id);
+function cur(){return current>=0?tenants[current]:null}
+function blankTenant(){return JSON.parse(JSON.stringify(project))}
+function ensureTenant(){if(current<0){tenants.push(blankTenant());current=0;renderTenants()}}
+function hasBg(){return !!project.bg}
+function save(){/* intentionally no persistence */}
+function readImage(file,cb){if(!file||!file.type.startsWith("image/"))return;let r=new FileReader();r.onload=()=>cb(r.result);r.readAsDataURL(file)}
+function showStatus(s){$("status").textContent=s||""}
+function renderTenants(){
+ const box=$("tenantList");box.innerHTML="";
+ tenants.forEach((t,i)=>{let c=document.createElement("div");c.className="tenant-card"+(i===current?" active":"");c.innerHTML=t.image?'<img src="'+t.image+'"><button class="x" title="刪除">×</button>':'<div class="small" style="height:100%;display:flex;align-items:center;justify-content:center">尚未上傳租戶圖檔</div>';c.onclick=e=>{if(e.target.classList.contains("x"))return;current=i;selected="image";loadProject()};c.querySelector(".x")?.addEventListener("click",e=>{e.stopPropagation();deleteTenant(i)});box.appendChild(c)})
+}
+function deleteTenant(i=current){
+ if(i<0)return;if(!confirm("確定刪除這個租戶檔案？"))return;
+ tenants.splice(i,1);if(!tenants.length){current=-1;project={...blankTenant()}}else current=Math.min(i,tenants.length-1);
+ loadProject();showStatus("租戶檔案已刪除。")
+}
+function syncFromTenant(){if(!cur())return;project=cur()}
+function syncToTenant(){if(cur())tenants[current]=project}
+function loadProject(){
+ syncFromTenant();
+ $("bg").src=project.bg||"";$("bg").style.display=project.bg?"block":"none";$("empty").style.display=project.bg?"none":"flex";
+ $("imageInner").src=project.image||"";$("imageObj").style.display=project.image?"block":"none";
+ $("textObj").textContent=project.text||"";$("textObj").style.display=project.text?"block":"none";
+ setImageBox();setTextBox();refreshPanel();updateSelection();renderTenants()
+}
+function setImageBox(){let e=$("imageObj");e.style.left=project.ix+"px";e.style.top=project.iy+"px";e.style.width=project.iw+"px";e.style.height=project.ih+"px"}
+function setTextBox(){let e=$("textObj");e.style.left=project.tx+"px";e.style.top=project.ty+"px";e.style.fontSize=project.fs+"px";e.style.letterSpacing=project.letter+"px";e.style.fontFamily=project.font;e.style.color=project.color}
+function selectedState(){
+ if(selected==="image")return {x:project.ix,y:project.iy,w:project.iw,h:project.ih};
+ let e=$("textObj");return {x:project.tx,y:project.ty,w:e.offsetWidth,h:e.offsetHeight}
+}
+function updateSelection(){
+ let e=selected==="image"?$("imageObj"):$("textObj"),s=selectedState(),box=$("selection");
+ if(e.style.display==="none"){box.style.display="none";return}
+ box.style.display="block";box.style.left=s.x+"px";box.style.top=s.y+"px";box.style.width=Math.max(1,s.w)+"px";box.style.height=Math.max(1,s.h)+"px"
+}
+function refreshPanel(){
+ $("kind").value=selected;
+ $("imagePanel").style.display=selected==="image"?"block":"none";$("textPanel").style.display=selected==="text"?"block":"none";
+ $("x").value=project.ix;$("y").value=project.iy;$("w").value=project.iw;$("h").value=project.ih;$("lock").checked=project.lock;
+ $("text").value=project.text;$("fontSize").value=project.fs;$("letter").value=project.letter;$("font").value=project.font;$("color").value=project.color;
+}
+function choose(k){selected=k;refreshPanel();updateSelection()}
+function pos(e){let r=$("canvas").getBoundingClientRect();return{x:(e.clientX-r.left)/zoom,y:(e.clientY-r.top)/zoom}}
+function startMove(k,e,resize=false){if(k==="image"&&!project.image)return;if(k==="text"&&!project.text)return;e.preventDefault();e.stopPropagation();choose(k);let p=pos(e);drag={resize,start:p,state:selectedState(),corner:e.currentTarget.dataset.c||null}}
+function move(e){
+ if(!drag)return;let p=pos(e),dx=p.x-drag.start.x,dy=p.y-drag.start.y,s=drag.state;
+ if(!drag.resize){
+   if(selected==="image"){project.ix=Math.round(s.x+dx);project.iy=Math.round(s.y+dy)}
+   else {project.tx=Math.round(s.x+dx);project.ty=Math.round(s.y+dy)}
+ }else if(selected==="image"){
+   let nw=s.w,nh=s.h;
+   if(drag.corner==="br"){nw=s.w+dx;nh=s.h+dy}
+   if(drag.corner==="tr"){nw=s.w+dx;nh=s.h-dy;project.iy=Math.round(s.y+dy)}
+   if(drag.corner==="bl"){nw=s.w-dx;nh=s.h+dy;project.ix=Math.round(s.x+dx)}
+   if(drag.corner==="tl"){nw=s.w-dx;nh=s.h-dy;project.ix=Math.round(s.x+dx);project.iy=Math.round(s.y+dy)}
+   nw=Math.max(10,nw);nh=Math.max(10,nh);
+   if(project.lock){let ratio=s.h/s.w;if(Math.abs(dx)>=Math.abs(dy))nh=nw*ratio;else nw=nh/ratio}
+   project.iw=Math.round(nw);project.ih=Math.round(nh)
+ }else{
+   let delta=(dx+dy)/2;project.fs=Math.max(8,Math.min(200,Math.round(s.w?project.fs*(1+delta/Math.max(80,s.w)):project.fs+delta*.25)))
+ }
+ syncToTenant();save();setImageBox();setTextBox();refreshPanel();updateSelection()
+}
+function end(){drag=null}
+$("imageObj").addEventListener("pointerdown",e=>startMove("image",e));
+$("textObj").addEventListener("pointerdown",e=>startMove("text",e));
+document.querySelectorAll(".handle").forEach(h=>h.addEventListener("pointerdown",e=>{startMove(selected,e,true)}));
+document.addEventListener("pointermove",move);document.addEventListener("pointerup",end);
+
+$("bgUpload").onclick=()=>$("bgFile").click();
+$("bgFile").onchange=e=>readImage(e.target.files[0],src=>{project.bg=src;syncToTenant();loadProject();fit();showStatus("底圖已上傳。")});
+$("bgDelete").onclick=()=>{if(!project.bg)return;if(confirm("確定刪除底圖？")){project.bg="";syncToTenant();loadProject();showStatus("底圖已刪除。")}};
+function bgDropSetup(){
+ let d=$("bgDrop");d.ondragover=e=>{e.preventDefault();d.classList.add("drag")};d.ondragleave=()=>d.classList.remove("drag");d.ondrop=e=>{e.preventDefault();d.classList.remove("drag");readImage(e.dataTransfer.files[0],src=>{project.bg=src;syncToTenant();loadProject();fit()})}
+}
+bgDropSetup();
+
+$("newTenant").onclick=()=>{if(!hasBg()){alert("請先上傳底圖。");return}tenants.push(blankTenant());current=tenants.length-1;loadProject();showStatus("已新增租戶檔案。")};
+$("deleteTenant").onclick=()=>deleteTenant();
+
+$("imageUpload").onclick=()=>$("imageFile").click();
+$("imageFile").onchange=e=>readImage(e.target.files[0],setImage);
+function setImage(src){
+ if(!hasBg()){alert("請先上傳底圖。");return}
+ let im=new Image();im.onload=()=>{project.image=src;project.imageOriginal=src;let r=Math.min(430/im.naturalWidth,185/im.naturalHeight,1);project.iw=Math.max(10,Math.round(im.naturalWidth*r));project.ih=Math.max(10,Math.round(im.naturalHeight*r));project.ix=Math.round((W-project.iw)/2);project.iy=Math.round((H-project.ih)/2);syncToTenant();loadProject();choose("image");showStatus("圖檔已加入。")};im.src=src
+}
+function imageDropSetup(){
+ let d=$("imageDrop");d.ondragover=e=>{e.preventDefault();d.classList.add("drag")};d.ondragleave=()=>d.classList.remove("drag");d.ondrop=e=>{e.preventDefault();d.classList.remove("drag");readImage(e.dataTransfer.files[0],setImage)}
+}
+imageDropSetup();
+
+$("imageDelete").onclick=()=>{if(!project.image)return;if(confirm("確定刪除目前圖檔？")){project.image="";project.imageOriginal="";syncToTenant();loadProject();showStatus("圖檔已刪除。")}};
+$("deleteSelected").onclick=()=>selected==="image"?$("imageDelete").click():deleteText();
+$("addText").onclick=()=>{if(!hasBg()){alert("請先上傳底圖。");return}project.text=project.text||"中控室";project.tx=485;project.ty=95;syncToTenant();loadProject();choose("text");showStatus("文字已加入，可直接移動與拉取大小。")};
+function deleteText(){if(!project.text)return;if(confirm("確定刪除文字？")){project.text="";syncToTenant();loadProject();showStatus("文字已刪除。")}}
+
+["x","y","w","h"].forEach(id=>$(id).addEventListener("input",()=>{project.ix=+$("x").value;project.iy=+$("y").value;project.iw=Math.max(1,+$("w").value);project.ih=Math.max(1,+$("h").value);syncToTenant();setImageBox();updateSelection()}));
+$("lock").onchange=e=>{project.lock=e.target.checked;syncToTenant()};
+["text","fontSize","letter","font","color"].forEach(id=>$(id).addEventListener("input",()=>{project.text=$("text").value;project.fs=+$("fontSize").value;project.letter=+$("letter").value;project.font=$("font").value;project.color=$("color").value;syncToTenant();setTextBox();updateSelection()}));
+$("kind").onchange=e=>choose(e.target.value==="text"?"text":"image");
+$("centerImage").onclick=()=>{project.ix=Math.round((W-project.iw)/2);project.iy=Math.round((H-project.ih)/2);syncToTenant();loadProject();choose("image")};
+$("centerBtn").onclick=()=>selected==="image"?$("centerImage").click():(project.tx=Math.round((W-$("textObj").offsetWidth)/2),project.ty=Math.round((H-$("textObj").offsetHeight)/2),syncToTenant(),loadProject(),choose("text"));
+
+function trimWhite(){
+ if(!project.image){alert("請先上傳圖檔。");return}
+ let im=new Image();im.onload=()=>{
+  let c=document.createElement("canvas"),ctx=c.getContext("2d");c.width=im.naturalWidth;c.height=im.naturalHeight;ctx.drawImage(im,0,0);
+  let a=ctx.getImageData(0,0,c.width,c.height),p=a.data,minX=c.width,minY=c.height,maxX=-1,maxY=-1;
+  for(let y=0;y<c.height;y++)for(let x=0;x<c.width;x++){let i=(y*c.width+x)*4;let alpha=p[i+3],notWhite=((255-p[i])+(255-p[i+1])+(255-p[i+2])>20);if(alpha>12&&notWhite){minX=Math.min(minX,x);minY=Math.min(minY,y);maxX=Math.max(maxX,x);maxY=Math.max(maxY,y)}}
+  if(maxX<0){showStatus("找不到可裁切的圖片內容。");return}
+  minX=Math.max(0,minX-1);minY=Math.max(0,minY-1);maxX=Math.min(c.width-1,maxX+1);maxY=Math.min(c.height-1,maxY+1);
+  let nw=maxX-minX+1,nh=maxY-minY+1,o=document.createElement("canvas");o.width=nw;o.height=nh;o.getContext("2d").drawImage(c,minX,minY,nw,nh,0,0,nw,nh);
+  let sx=project.iw/c.width,sy=project.ih/c.height;project.image=o.toDataURL("image/png");project.iw=Math.max(1,Math.round(nw*sx));project.ih=Math.max(1,Math.round(nh*sy));syncToTenant();loadProject();choose("image");showStatus("圖片四周留白已最小化。")
+ };im.src=project.image
+}
+$("trim").onclick=trimWhite;
+
+document.addEventListener("paste",e=>{
+ let item=[...e.clipboardData.items].find(i=>i.type.startsWith("image/"));if(!item)return;
+ let file=item.getAsFile();
+ let target=document.activeElement;
+ if(target===$("bgDrop")||target===$("bgUpload"))readImage(file,src=>{project.bg=src;syncToTenant();loadProject();fit()});
+ else setImage(file);
+ e.preventDefault()
+});
+
+function fit(){let v=$("viewport");zoom=Math.max(.1,Math.min(4,Math.min((v.clientWidth-30)/W,(v.clientHeight-30)/H)));$("wrap").style.transform=`scale(${zoom})`;updateSelection()}
+$("fitBtn").onclick=fit;$("oneBtn").onclick=()=>{zoom=1;$("wrap").style.transform="scale(1)";updateSelection()};window.addEventListener("resize",fit);
+$("panelBtn").onclick=()=>$("right").classList.toggle("hide");
+
+async function exportPNG(){
+ if(!project.bg){alert("請先上傳底圖。");return}
+ let c=document.createElement("canvas");c.width=W;c.height=H;let ctx=c.getContext("2d");
+ const img=s=>new Promise((res,rej)=>{let i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=s});
+ try{
+  ctx.drawImage(await img(project.bg),0,0,W,H);
+  if(project.image)ctx.drawImage(await img(project.image),project.ix,project.iy,project.iw,project.ih);
+  if(project.text){ctx.font=`500 ${project.fs}px ${project.font}`;ctx.fillStyle=project.color;ctx.textAlign="center";ctx.textBaseline="top";ctx.fillText(project.text,project.tx,project.ty)}
+  let a=document.createElement("a");a.download="HUB租戶按鈕.png";a.href=c.toDataURL("image/png");a.click()
+ }catch(err){alert("匯出失敗："+err.message)}
+}
+$("exportBtn").onclick=exportPNG;
+
+// 啟動：完全空白，不讀取任何舊資料。
+loadProject();fit();
+</script>
+</body></html>

@@ -1,0 +1,516 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>租戶標題／按鈕底圖編輯器</title>
+<style>
+  :root{--green:#198754;--panel:#fff;--bg:#f3f5f7}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;background:var(--bg);color:#222}
+  header{padding:18px 24px;background:#fff;border-bottom:1px solid #ddd}
+  header h1{margin:0 0 4px;font-size:22px}
+  header p{margin:0;color:#666;font-size:13px}
+  .app{display:grid;grid-template-columns:280px minmax(520px,1fr) 320px;gap:16px;padding:16px;min-height:calc(100vh - 83px)}
+  .panel{background:var(--panel);border:1px solid #ddd;border-radius:12px;padding:16px;box-shadow:0 2px 8px #0000000d}
+  h2{font-size:16px;margin:0 0 12px}
+  label{display:block;font-size:13px;font-weight:600;margin:12px 0 6px}
+  input[type=text],input[type=number],select,input[type=color]{width:100%;height:38px;border:1px solid #cfcfcf;border-radius:7px;padding:7px 9px;background:#fff}
+  input[type=color]{padding:3px}
+  button{border:0;border-radius:7px;padding:9px 12px;cursor:pointer;font-weight:600}
+  .primary{background:var(--green);color:#fff}.secondary{background:#eef1f3}.danger{background:#fee;color:#a00}
+  .row{display:flex;gap:8px}.row>*{flex:1}
+  .tenant{display:flex;align-items:center;justify-content:space-between;padding:10px;border:1px solid #ddd;border-radius:8px;margin-bottom:8px;cursor:pointer}
+  .tenant.active{border:2px solid var(--green);padding:9px;background:#f4fff8}
+  .tenant small{display:block;color:#777}
+  .tenant .x{font-size:12px;padding:5px 7px}
+  .drop{border:2px dashed #bbb;border-radius:9px;padding:14px;text-align:center;color:#666;font-size:13px;margin-bottom:10px}
+  .drop.drag{border-color:var(--green);background:#f4fff8}
+  .stage-wrap{display:flex;align-items:center;justify-content:center;min-height:520px;overflow:auto}
+  .stage{position:relative;width:971px;height:221px;transform-origin:center center;background:#eee;box-shadow:0 6px 20px #0002;flex:none}
+  .stage img{position:absolute;inset:0;width:971px;height:221px;object-fit:fill;user-select:none}
+  #textLayer{position:absolute;left:0;top:0;white-space:pre;cursor:move;user-select:none;line-height:1}
+  #logoLayer{position:absolute;left:0;top:0;width:120px;height:80px;object-fit:contain;object-position:center;cursor:move;user-select:none;display:none}
+  #logoBox,#textBox{position:absolute;border:1.5px dashed #198754;pointer-events:none;display:none}
+  .handle{position:absolute;width:10px;height:10px;background:#fff;border:2px solid #198754;border-radius:2px;pointer-events:auto;cursor:nwse-resize;box-sizing:border-box}
+  .handle.br{right:-6px;bottom:-6px}.handle.bl{left:-6px;bottom:-6px}.handle.tr{right:-6px;top:-6px}.handle.tl{left:-6px;top:-6px}
+  .selected{outline:1px solid #198754;outline-offset:2px}
+  .selectable{touch-action:none}
+  .hint{font-size:12px;color:#777;margin-top:8px}
+  .swatch{display:flex;gap:8px;align-items:center}
+  .swatch span{font-family:monospace;color:#555}
+  .status{font-size:12px;color:#666;margin-top:10px;min-height:18px}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap}
+  @media(max-width:1100px){.app{grid-template-columns:240px 1fr}.right{grid-column:1/-1}}
+  @media(max-width:760px){.app{grid-template-columns:1fr}.stage-wrap{min-height:300px}.stage{transform:scale(.65);margin:-35px 0}}
+</style>
+</head>
+<body>
+<header>
+  <h1>租戶標題／按鈕底圖編輯器</h1>
+  <p>設計尺寸固定為 971 × 221 px；預設文字規範：思源黑體 Medium、20 px、字距 0、#323232。</p>
+</header>
+
+<div class="app">
+  <aside class="panel">
+    <h2>租戶</h2>
+    <div id="tenantList"></div>
+    <div class="row">
+      <button class="primary" id="addTenant">＋新增租戶</button>
+      <button class="secondary" id="duplicateTenant">複製</button>
+    </div>
+    <hr style="border:0;border-top:1px solid #eee;margin:16px 0">
+    <label>租戶名稱</label>
+    <input id="tenantName" type="text" placeholder="例如：國泰土城科技大樓A棟管理處">
+    <div class="toolbar" style="margin-top:10px">
+      <button class="primary" id="saveTenant">儲存租戶</button>
+      <button class="danger" id="deleteTenant">刪除</button>
+    </div>
+  </aside>
+
+  <main class="panel">
+    <h2>預覽／編輯</h2>
+    <div class="drop" id="drop">
+      將底圖拖曳到此處，或按「上傳底圖」；也可直接在此頁按 Ctrl+V 貼上圖片
+    </div>
+    <div class="toolbar" style="margin-bottom:12px">
+      <label style="margin:0;display:inline-flex;align-items:center;gap:7px;font-weight:600">
+        <input id="file" type="file" accept="image/*"> 上傳底圖
+      </label>
+      <button class="secondary" id="resetBg">還原目前國泰底圖</button>
+      <button class="primary" id="export">匯出 PNG</button>
+    </div>
+    <div class="stage-wrap">
+      <div class="stage" id="stage">
+        <img id="bg" alt="底圖">
+        <img id="logoLayer" class="selectable" alt="租戶 Logo">
+        <div id="logoBox">
+          <div class="handle tl" data-target="logo" data-corner="tl"></div><div class="handle tr" data-target="logo" data-corner="tr"></div>
+          <div class="handle bl" data-target="logo" data-corner="bl"></div><div class="handle br" data-target="logo" data-corner="br"></div>
+        </div>
+        <div id="textLayer" class="selectable">中控室</div>
+        <div id="textBox">
+          <div class="handle tl" data-target="text" data-corner="tl"></div><div class="handle tr" data-target="text" data-corner="tr"></div>
+          <div class="handle bl" data-target="text" data-corner="bl"></div><div class="handle br" data-target="text" data-corner="br"></div>
+        </div>
+      </div>
+    </div>
+    <div class="hint">拖曳文字即可調整位置；四角控制點可直接放大／縮小文字。文字會以 971 × 221 px 原尺寸輸出。</div>
+    <div class="status" id="status"></div>
+  </main>
+
+  <aside class="panel right">
+    <h2>租戶公司 LOGO</h2>
+    <div class="drop" id="logoDrop">
+      將 LOGO 拖曳到此處，或按「上傳 LOGO」；也可以直接 Ctrl+V 貼上 LOGO 圖片
+    </div>
+    <div class="toolbar">
+      <label style="margin:0;display:inline-flex;align-items:center;gap:7px;font-weight:600">
+        <input id="logoFile" type="file" accept="image/*"> 上傳 LOGO
+      </label>
+      <button class="secondary" id="removeLogo">移除 LOGO</button>
+    </div>
+    <div class="row">
+      <div><label>LOGO X</label><input id="logoX" type="number" value="60"></div>
+      <div><label>LOGO Y</label><input id="logoY" type="number" value="70"></div>
+    </div>
+    <div class="row">
+      <div><label>LOGO 寬度 px</label><input id="logoW" type="number" min="10" max="971" value="120"></div>
+      <div><label>LOGO 高度 px</label><input id="logoH" type="number" min="10" max="221" value="80"></div>
+    </div>
+    <label style="display:flex;align-items:center;gap:8px;font-weight:500">
+      <input id="logoLock" type="checkbox" checked> 鎖定比例
+    </label>
+    <div class="toolbar" style="margin-top:10px">
+      <button class="secondary" id="removeBg">LOGO 自動去背</button>
+      <button class="secondary" id="undoBg">還原原始 LOGO</button>
+    </div>
+    <div class="row">
+      <div><label>去背容許值</label><input id="bgTolerance" type="number" min="5" max="150" value="35"></div>
+      <div style="display:flex;align-items:end"><div class="hint" style="margin:0 0 8px">適合白底／單色底 LOGO</div></div>
+    </div>
+    <div class="hint">LOGO 可直接拖曳移動；四角控制點可直接放大／縮小，鎖定比例時不會變形。去背在瀏覽器本機處理，不需上傳到伺服器。</div>
+
+    <hr style="border:0;border-top:1px solid #eee;margin:16px 0">
+    <h2>文字規格</h2>
+    <label>顯示文字</label>
+    <input id="text" type="text" value="中控室">
+    <label>字型</label>
+    <select id="font">
+      <option value='"Noto Sans TC","Source Han Sans TC","思源黑體",sans-serif'>思源黑體／Noto Sans TC（預設）</option>
+      <option value='"Microsoft JhengHei",sans-serif'>微軟正黑體</option>
+      <option value='"PingFang TC","Microsoft JhengHei",sans-serif'>蘋方／微軟正黑體</option>
+      <option value='Arial,sans-serif'>Arial</option>
+      <option value='serif'>Serif</option>
+      <option value='sans-serif'>Sans Serif</option>
+    </select>
+    <label>字型粗細</label>
+    <select id="weight">
+      <option value="500" selected>Medium（預設）</option>
+      <option value="400">Regular</option>
+      <option value="600">SemiBold</option>
+      <option value="700">Bold</option>
+    </select>
+    <div class="row">
+      <div><label>字型大小 px</label><input id="size" type="number" min="8" max="200" value="20"></div>
+      <div><label>字距 px</label><input id="spacing" type="number" min="-20" max="50" step="0.5" value="0"></div>
+    </div>
+    <label>文字顏色</label>
+    <div class="swatch"><input id="color" type="color" value="#323232"><span id="hex">#323232</span></div>
+    <div class="row">
+      <div><label>水平位置 X</label><input id="x" type="number" value="465"></div>
+      <div><label>垂直位置 Y</label><input id="y" type="number" value="110"></div>
+    </div>
+    <label>文字對齊</label>
+    <select id="align">
+      <option value="center" selected>置中</option>
+      <option value="left">靠左</option>
+      <option value="right">靠右</option>
+    </select>
+    <div class="toolbar" style="margin-top:12px">
+      <button class="secondary" id="defaultStyle">套用簡報預設規範</button>
+      <button class="secondary" id="centerText">文字置中</button>
+    </div>
+    <div class="hint">簡報檔提供的規範為：思源黑體 Medium 20 px／字距 0／#323232（RGB 50,50,50）。</div>
+  </aside>
+</div>
+
+<script>
+const DEFAULT_BG = "data:image/png;base64,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";
+const KEY = "tenantTitleEditor_v1";
+let tenants = JSON.parse(localStorage.getItem(KEY) || "null") || [{
+  id: crypto.randomUUID(), name:"國泰松江大樓hub管理處", bg:DEFAULT_BG,
+  text:"中控室", font:'"Noto Sans TC","Source Han Sans TC","思源黑體",sans-serif',
+  weight:500,size:20,spacing:0,color:"#323232",x:485,y:110,align:"center",
+  logo:"",originalLogo:"",logoX:60,logoY:70,logoW:120,logoH:80,logoLock:true
+}];
+let current = 0, dragging=false, dx=0, dy=0, draggingLogo=false, logoDX=0, logoDY=0;
+
+const $=id=>document.getElementById(id);
+const save=()=>localStorage.setItem(KEY,JSON.stringify(tenants));
+
+function renderList(){
+  $("tenantList").innerHTML="";
+  tenants.forEach((t,i)=>{
+    const d=document.createElement("div"); d.className="tenant"+(i===current?" active":"");
+    d.innerHTML=`<div><strong>${escapeHtml(t.name||"未命名租戶")}</strong><small>${t.text||""}</small></div>`;
+    d.onclick=()=>{current=i; loadTenant()};
+    $("tenantList").appendChild(d);
+  });
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function loadTenant(){
+  const t=tenants[current];
+  $("tenantName").value=t.name||"";
+  $("text").value=t.text||"";
+  $("font").value=t.font||$("font").options[0].value;
+  $("weight").value=t.weight||500;
+  $("size").value=t.size??20;
+  $("spacing").value=t.spacing??0;
+  $("color").value=t.color||"#323232";
+  $("x").value=t.x??485; $("y").value=t.y??110;
+  $("align").value=t.align||"center";
+  $("logoX").value=t.logoX??60; $("logoY").value=t.logoY??70;
+  $("logoW").value=t.logoW??120; $("logoH").value=t.logoH??80;
+  $("logoLock").checked=t.logoLock!==false;
+  $("bg").src=t.bg||DEFAULT_BG;
+  applyLogo(); applyText(); renderList();
+}
+function sync(){
+  const t=tenants[current];
+  t.name=$("tenantName").value; t.text=$("text").value;
+  t.font=$("font").value; t.weight=+$("weight").value; t.size=+$("size").value;
+  t.spacing=+$("spacing").value; t.color=$("color").value;
+  t.x=+$("x").value; t.y=+$("y").value; t.align=$("align").value;
+  t.logoX=+$("logoX").value; t.logoY=+$("logoY").value;
+  t.logoW=+$("logoW").value; t.logoH=+$("logoH").value;
+  t.logoLock=$("logoLock").checked;
+  t.logo=$("logoLayer").src && $("logoLayer").style.display!=="none" ? $("logoLayer").src : "";
+  save(); renderList();
+}
+function applyLogo(){
+  const t=tenants[current], e=$("logoLayer"), box=$("logoBox");
+  const has=!!t.logo;
+  e.style.display=has?"block":"none";
+  box.style.display=has?"block":"none";
+  if(has){
+    e.src=t.logo; e.style.left=(t.logoX??60)+"px"; e.style.top=(t.logoY??70)+"px";
+    e.style.width=(t.logoW??120)+"px"; e.style.height=(t.logoH??80)+"px";
+    box.style.left=(t.logoX??60)+"px"; box.style.top=(t.logoY??70)+"px";
+    box.style.width=(t.logoW??120)+"px"; box.style.height=(t.logoH??80)+"px";
+  }
+}
+function readLogo(file){
+  if(!file || !file.type.startsWith("image/")) return;
+  const r=new FileReader();
+  r.onload=()=>{
+    const t=tenants[current];
+    t.logo=r.result;
+    t.originalLogo=r.result;
+    const img=new Image();
+    img.onload=()=>{
+      const maxW=220, maxH=140;
+      const ratio=Math.min(maxW/img.naturalWidth,maxH/img.naturalHeight,1);
+      t.logoW=Math.max(10,Math.round(img.naturalWidth*ratio));
+      t.logoH=Math.max(10,Math.round(img.naturalHeight*ratio));
+      t.logoX=60; t.logoY=Math.round((221-t.logoH)/2);
+      $("logoX").value=t.logoX;$("logoY").value=t.logoY;
+      $("logoW").value=t.logoW;$("logoH").value=t.logoH;
+      applyLogo();save();
+      $("status").textContent="LOGO 已載入，可拖曳、縮放及調整位置。";
+    };
+    img.src=r.result;
+  };
+  r.readAsDataURL(file);
+}
+function applyText(){
+  const e=$("textLayer");
+  e.textContent=$("text").value;
+  e.style.fontFamily=$("font").value;
+  e.style.fontWeight=$("weight").value;
+  e.style.fontSize=$("size").value+"px";
+  e.style.letterSpacing=$("spacing").value+"px";
+  e.style.color=$("color").value;
+  e.style.textAlign=$("align").value;
+  e.style.left=$("x").value+"px"; e.style.top=$("y").value+"px";
+  if($("align").value==="center") e.style.transform="translateX(-50%)";
+  else if($("align").value==="right") e.style.transform="translateX(-100%)";
+  else e.style.transform="none";
+  const tb=$("textBox");
+  tb.style.display="block";
+  const rect=e.getBoundingClientRect(), sr=$("stage").getBoundingClientRect(), scale=sr.width/971;
+  // text box follows the rendered text dimensions
+  const w=e.offsetWidth, h=e.offsetHeight;
+  let left=+$("x").value, top=+$("y").value;
+  if($("align").value==="center") left-=w/2;
+  else if($("align").value==="right") left-=w;
+  tb.style.left=left+"px";tb.style.top=top+"px";tb.style.width=w+"px";tb.style.height=h+"px";
+  $("hex").textContent=$("color").value.toUpperCase();
+}
+["text","font","weight","size","spacing","color","x","y","align"].forEach(id=>{
+  $(id).addEventListener("input",()=>{applyText();sync()});
+  $(id).addEventListener("change",()=>{applyText();sync()});
+});
+
+["logoX","logoY","logoW","logoH"].forEach(id=>{
+  $(id).addEventListener("input",()=>{
+    if(id==="logoW" || id==="logoH"){
+      const t=tenants[current];
+      if($("logoLock").checked && t.logo){
+        const oldW=t.logoW||120, oldH=t.logoH||80, ratio=oldH/oldW;
+        if(id==="logoW"){ $("logoH").value=Math.max(10,Math.round(+$("logoW").value*ratio)); }
+        else { $("logoW").value=Math.max(10,Math.round(+$("logoH").value/ratio)); }
+      }
+    }
+    applyLogo();sync();
+  });
+});
+$("logoFile").onchange=e=>readLogo(e.target.files[0]);
+$("logoDrop").ondragover=e=>{e.preventDefault();$("logoDrop").classList.add("drag")};
+$("logoDrop").ondragleave=()=>$("logoDrop").classList.remove("drag");
+$("logoDrop").ondrop=e=>{e.preventDefault();$("logoDrop").classList.remove("drag");readLogo(e.dataTransfer.files[0])};
+$("removeLogo").onclick=()=>{
+  tenants[current].logo="";
+  $("logoLayer").style.display="none"; $("logoBox").style.display="none";
+  save(); $("status").textContent="LOGO 已移除。";
+};
+$("logoLayer").onpointerdown=e=>{
+  draggingLogo=true; $("logoLayer").setPointerCapture(e.pointerId);
+  const r=$("logoLayer").getBoundingClientRect();
+  logoDX=e.clientX-r.left; logoDY=e.clientY-r.top;
+};
+$("logoLayer").onpointermove=e=>{
+  if(!draggingLogo)return;
+  const r=$("stage").getBoundingClientRect(), scale=r.width/971, t=tenants[current];
+  $("logoX").value=Math.round((e.clientX-r.left)/scale-logoDX/scale);
+  $("logoY").value=Math.round((e.clientY-r.top)/scale-logoDY/scale);
+  applyLogo();
+};
+$("logoLayer").onpointerup=()=>{draggingLogo=false;sync()};
+
+$("saveTenant").onclick=()=>{sync(); $("status").textContent="已儲存目前租戶。"};
+$("addTenant").onclick=()=>{
+  tenants.push({id:crypto.randomUUID(),name:"新租戶",bg:DEFAULT_BG,text:"中控室",font:$("font").value,weight:500,size:20,spacing:0,color:"#323232",x:485,y:110,align:"center",logo:"",originalLogo:"",logoX:60,logoY:70,logoW:120,logoH:80,logoLock:true});
+  current=tenants.length-1; save(); loadTenant();
+};
+$("duplicateTenant").onclick=()=>{
+  const copy=JSON.parse(JSON.stringify(tenants[current])); copy.id=crypto.randomUUID(); copy.name=(copy.name||"租戶")+"（複本）";
+  tenants.splice(current+1,0,copy); current++; save(); loadTenant();
+};
+$("deleteTenant").onclick=()=>{
+  if(tenants.length===1){alert("至少保留一個租戶。");return}
+  if(confirm("確定刪除目前租戶？")){tenants.splice(current,1);current=Math.max(0,current-1);save();loadTenant();}
+};
+$("defaultStyle").onclick=()=>{
+  $("font").value='"Noto Sans TC","Source Han Sans TC","思源黑體",sans-serif';
+  $("weight").value=500;$("size").value=20;$("spacing").value=0;$("color").value="#323232";
+  applyText();sync();
+};
+$("centerText").onclick=()=>{
+  $("x").value=485;$("y").value=110;$("align").value="center";applyText();sync();
+};
+$("resetBg").onclick=()=>{tenants[current].bg=DEFAULT_BG;$("bg").src=DEFAULT_BG;save();$("status").textContent="已還原底圖。"};
+$("file").onchange=e=>readImage(e.target.files[0]);
+function readImage(file){
+  if(!file)return;
+  const r=new FileReader();r.onload=()=>{tenants[current].bg=r.result;$("bg").src=r.result;save();$("status").textContent="底圖已載入。"};r.readAsDataURL(file);
+}
+$("drop").ondragover=e=>{e.preventDefault();$("drop").classList.add("drag")};
+$("drop").ondragleave=()=>$("drop").classList.remove("drag");
+$("drop").ondrop=e=>{e.preventDefault();$("drop").classList.remove("drag");readImage(e.dataTransfer.files[0])};
+document.addEventListener("paste",e=>{
+  for(const item of e.clipboardData.items){
+    if(!item.type.startsWith("image/")) continue;
+    // 若目前焦點在 LOGO 控制區，貼上即視為 LOGO；否則視為底圖
+    const logoArea=$("logoDrop").contains(document.activeElement) ||
+      $("logoFile")===document.activeElement ||
+      $("removeBg")===document.activeElement ||
+      $("undoBg")===document.activeElement ||
+      $("logoX")===document.activeElement || $("logoY")===document.activeElement ||
+      $("logoW")===document.activeElement || $("logoH")===document.activeElement;
+    if(logoArea) readLogo(item.getAsFile());
+    else readImage(item.getAsFile());
+    e.preventDefault(); break;
+  }
+});
+$("textLayer").onclick=()=>{$("textBox").style.display="block"};
+$("textLayer").onpointerdown=e=>{
+  dragging=true;$("textLayer").setPointerCapture(e.pointerId);
+  dx=e.clientX-$("textLayer").getBoundingClientRect().left;
+  dy=e.clientY-$("textLayer").getBoundingClientRect().top;
+};
+$("textLayer").onpointermove=e=>{
+  if(!dragging)return;
+  const r=$("stage").getBoundingClientRect(), scale=r.width/971;
+  $("x").value=Math.round((e.clientX-r.left)/scale-dx/scale+($("align").value==="center"?$("textLayer").offsetWidth/2:$("align").value==="right"?$("textLayer").offsetWidth:0));
+  $("y").value=Math.round((e.clientY-r.top)/scale-dy/scale);
+  applyText();
+};
+$("textLayer").onpointerup=()=>{dragging=false;sync()};
+
+
+// --- 直接拖曳／四角縮放 ---
+let transformMode=null, transformTarget=null, startX=0, startY=0, startState=null;
+
+function stagePoint(e){
+  const r=$("stage").getBoundingClientRect(), scale=r.width/971;
+  return {x:(e.clientX-r.left)/scale,y:(e.clientY-r.top)/scale,scale};
+}
+function beginTransform(target, mode, e){
+  const t=tenants[current], p=stagePoint(e);
+  transformMode=mode; transformTarget=target; startX=p.x; startY=p.y;
+  startState=target==="logo"
+    ? {x:t.logoX||0,y:t.logoY||0,w:t.logoW||120,h:t.logoH||80}
+    : {x:t.x||0,y:t.y||0,size:t.size||20,align:t.align||"center"};
+  e.currentTarget.setPointerCapture?.(e.pointerId);
+}
+function moveTransform(e){
+  if(!transformMode)return;
+  const p=stagePoint(e), t=tenants[current], dx=p.x-startX, dy=p.y-startY;
+  if(transformTarget==="logo"){
+    if(transformMode==="move"){
+      $("logoX").value=Math.round(startState.x+dx); $("logoY").value=Math.round(startState.y+dy);
+    }else{
+      const lock=$("logoLock").checked, s=startState, min=10;
+      let nw=s.w, nh=s.h;
+      if(transformMode==="resize") {
+        nw=Math.max(min,s.w+dx); nh=Math.max(min,s.h+dy);
+        if(lock){ const ratio=s.h/s.w; nh=Math.max(min,Math.round(nw*ratio)); }
+        $("logoW").value=Math.round(nw); $("logoH").value=Math.round(nh);
+      }
+    }
+    applyLogo();
+  }else{
+    if(transformMode==="move"){
+      let nx=startState.x+dx, ny=startState.y+dy;
+      $("x").value=Math.round(nx); $("y").value=Math.round(ny);
+    }else{
+      // Resize text based on diagonal drag. Keep the anchor at the opposite side.
+      const delta=(dx+dy)/2;
+      const ns=Math.max(8,Math.min(200,Math.round(startState.size+delta*0.35)));
+      $("size").value=ns;
+    }
+    applyText();
+  }
+}
+function endTransform(){ if(transformMode){transformMode=null;sync()} }
+
+$("logoLayer").addEventListener("pointerdown",e=>beginTransform("logo","move",e));
+$("textLayer").addEventListener("pointerdown",e=>beginTransform("text","move",e));
+document.querySelectorAll(".handle").forEach(h=>{
+  h.addEventListener("pointerdown",e=>{e.stopPropagation();beginTransform(h.dataset.target,"resize",e)});
+});
+document.addEventListener("pointermove",moveTransform);
+document.addEventListener("pointerup",endTransform);
+
+// --- 本機 LOGO 去背：以四角取樣的背景顏色做容許值透明化 ---
+async function removeLogoBackground(){
+  const t=tenants[current];
+  if(!t.logo){alert("請先上傳 LOGO。");return}
+  const img=new Image();
+  img.onload=()=>{
+    const c=document.createElement("canvas"), ctx=c.getContext("2d");
+    c.width=img.naturalWidth;c.height=img.naturalHeight;ctx.drawImage(img,0,0);
+    const data=ctx.getImageData(0,0,c.width,c.height), d=data.data;
+    const pts=[[0,0],[c.width-1,0],[0,c.height-1],[c.width-1,c.height-1]];
+    let br=0,bg=0,bb=0;
+    pts.forEach(([x,y])=>{const i=(y*c.width+x)*4;br+=d[i];bg+=d[i+1];bb+=d[i+2]});
+    br/=4;bg/=4;bb/=4;
+    const tol=+$("bgTolerance").value||35;
+    for(let i=0;i<d.length;i+=4){
+      const dist=Math.sqrt((d[i]-br)**2+(d[i+1]-bg)**2+(d[i+2]-bb)**2);
+      if(dist<=tol)d[i+3]=0;
+      else if(dist<=tol*1.8)d[i+3]=Math.round(d[i+3]*(dist-tol)/(tol*0.8));
+    }
+    ctx.putImageData(data,0,0);
+    t.logo=c.toDataURL("image/png");
+    applyLogo();save();
+    $("status").textContent="LOGO 已完成自動去背。若邊緣仍有底色，可提高「去背容許值」。";
+  };
+  img.src=t.logo;
+}
+$("removeBg").onclick=removeLogoBackground;
+$("undoBg").onclick=()=>{
+  const t=tenants[current];
+  if(!t.originalLogo){alert("目前沒有可還原的原始 LOGO。");return}
+  t.logo=t.originalLogo;applyLogo();save();$("status").textContent="已還原原始 LOGO。";
+};
+async function exportPNG(){
+  const c=document.createElement("canvas");c.width=971;c.height=221;
+  const ctx=c.getContext("2d"), t=tenants[current], img=new Image();
+  img.onload=()=>{
+    ctx.drawImage(img,0,0,971,221);
+    const drawText=()=>{
+      ctx.font=`${t.weight} ${t.size}px ${t.font}`;
+      ctx.fillStyle=t.color;ctx.textAlign=t.align;ctx.textBaseline="top";
+      ctx.fillText(t.text,t.x,t.y);
+      const a=document.createElement("a");a.download=(t.name||"租戶")+"-按鈕.png";a.href=c.toDataURL("image/png");a.click();
+    };
+    if(t.logo){
+      const logo=new Image();
+      logo.onload=()=>{
+        ctx.drawImage(logo,t.logoX||0,t.logoY||0,t.logoW||120,t.logoH||80);
+        drawText();
+      };
+      logo.onerror=drawText;
+      logo.src=t.logo;
+    }else drawText();
+  };
+  img.src=t.bg;
+}
+$("export").onclick=exportPNG;
+// 舊版本租戶資料相容：沒有 LOGO 欄位時自動補齊
+tenants.forEach(t=>{
+  if(t.logo===undefined)t.logo="";
+  if(t.originalLogo===undefined)t.originalLogo=t.logo||"";
+  if(t.logoX===undefined)t.logoX=60;
+  if(t.logoY===undefined)t.logoY=70;
+  if(t.logoW===undefined)t.logoW=120;
+  if(t.logoH===undefined)t.logoH=80;
+  if(t.logoLock===undefined)t.logoLock=true;
+});
+save();
+loadTenant();
+</script>
+</body>
+</html>
