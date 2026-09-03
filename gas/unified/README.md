@@ -1,6 +1,6 @@
-# PSS AI-PMO V23.0.0 統整測試版
+# PSS AI-PMO V23.1.0 統整測試版
 
-把此資料夾全部檔案上傳到**新的** Apps Script 專案後，執行 `installPssAiPmoV23()`，再部署 Web App。
+把此資料夾全部檔案上傳到 Apps Script 後，執行 `installPssAiPmoV23()`，再部署／更新 Web App。
 
-完整步驟見 repo：`docs/V23_安裝與測試.md`
-分析見：`docs/V23_三版分析與統整說明.md`
+完整步驟：`docs/V23_安裝與測試.md`  
+資料夾進度：`docs/V23.1_資料夾進度追蹤.md`

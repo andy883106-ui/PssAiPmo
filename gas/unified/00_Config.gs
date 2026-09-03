@@ -1,6 +1,6 @@
-/** PSS AI-PMO V23.0.0 Unified - one spreadsheet, V22 architecture + R5.2/R5.3 workflows. */
+/** PSS AI-PMO V23.1.0 Unified - Drive folder progress board + clearer daily tracking. */
 var PMO_V21 = Object.freeze({
-  VERSION: '23.0.0',
+  VERSION: '23.1.0',
   SOURCE_DATABASE_ID: '11ndvBcV0geEF7oJv1kX28BuC4_kAKnl37wUhL-Rx27g',
   PROGRESS_DATABASE_ID: '1Oh2pnlZwusM7E-CKMr-eYYYOToTzHtJge_2yiqEypcM',
   LARK_BASE_URL: 'https://ejpl6m9o2b9n.jp.larksuite.com/base/FolabGHukaF07TslCOujualppig?table=tbl5FjhbqPncSLAB&view=vew1h0XWyw',
@@ -71,7 +71,8 @@ var PMO_V21 = Object.freeze({
     DELETE_LOG: 'V23_刪除工作紀錄',
     TASK_HISTORY: 'V23_任務回報歷程',
     PROJECT_REPORT: 'V23_專案報告設定',
-    NAS_EXPORT: 'V23_NAS匯出紀錄'
+    NAS_EXPORT: 'V23_NAS匯出紀錄',
+    FOLDER_PROGRESS: 'V23_資料夾進度'
   },
   HEADERS: {
     PROJECTS: ['專案ID','專案名稱','客戶','系統類型','負責人','專案狀態','進度','雲端資料夾','圖面送審狀態','開始日','預計完成日','來源分頁','來源列','更新時間'],
@@ -98,7 +99,8 @@ var PMO_V21 = Object.freeze({
     DELETE_LOG: ['紀錄ID','工作ID','專案ID','專案名稱','工作標題','工作類型','負責人','狀態','開始日','預計完成日','完成內容','附件連結','來源JSON','刪除人員','刪除時間','刪除原因','已復原'],
     TASK_HISTORY: ['歷程ID','時間','使用者','動作','工作ID','回報ID','專案ID','摘要'],
     PROJECT_REPORT: ['專案ID','顯示於報告','回報狀況','摘要','下次追蹤日','更新者','更新時間'],
-    NAS_EXPORT: ['匯出ID','匯出時間','執行者','資料夾連結','檔案數','摘要']
+    NAS_EXPORT: ['匯出ID','匯出時間','執行者','資料夾連結','檔案數','摘要'],
+    FOLDER_PROGRESS: ['專案ID','專案名稱','掃描時間','推估進度','下一階段','下一步','逾期數','合約／下單檔數','合約／下單存在','圖面送審檔數','圖面送審存在','追蹤紀錄檔數','追蹤紀錄存在','現場施作檔數','現場施作存在','驗收檔數','驗收存在','教育訓練檔數','教育訓練存在','請款檔數','請款存在']
   }
 });
 
@@ -115,3 +117,14 @@ var V21_DRAWING_PATTERN = /(圖面|繪圖|審圖|送審|圖說|竣工圖|CAD|平
 var V21_PROJECT_STATUSES = Object.freeze(['待簽約','待議價','已成案，待下單','已下單','進行中','施作中','修繕中','待追蹤','待驗收','待請款','完成','暫停','取消','封存','一般管理']);
 var V21_SYSTEM_TYPES = Object.freeze(['停車場系統','訪客系統','門禁系統','電梯梯控系統','批價機系統','在席系統','機器人系統','網路／主機整合','其他']);
 var V21_PROJECT_SUBFOLDERS = Object.freeze(['01_合約訂單銷貨驗收文件','02_圖面資料','03_專案追蹤記錄','04_施工照片','05_驗收文件','06_教育訓練','07_請款文件','08_其他文件']);
+
+/** Drive folder stages used to infer project progress and next tracking actions. */
+var V23_PROGRESS_STAGES = Object.freeze([
+  { id: 'contract', folder: '01_合約訂單銷貨驗收文件', label: '合約／下單', weight: 15, workHints: ['合約', '訂單', '下單', '議價', '簽約'], suggestTitle: '補齊合約／訂單文件並上傳至 01_' },
+  { id: 'drawing', folder: '02_圖面資料', label: '圖面送審', weight: 20, workHints: ['圖面', '繪圖', '送審', '竣工圖', 'CAD'], suggestTitle: '圖面送審／補圖並上傳至 02_' },
+  { id: 'tracking', folder: '03_專案追蹤記錄', label: '追蹤紀錄', weight: 15, workHints: ['追蹤', '會議', '協調', '回報'], suggestTitle: '更新專案追蹤紀錄並上傳至 03_' },
+  { id: 'site', folder: '04_施工照片', label: '現場施作', weight: 20, workHints: ['施工', '到場', '安裝', '除錯', '修繕', '現場'], suggestTitle: '現場施作／除錯並上傳照片至 04_' },
+  { id: 'accept', folder: '05_驗收文件', label: '驗收', weight: 15, workHints: ['驗收', '測試', '交屋', '移交'], suggestTitle: '辦理驗收並上傳文件至 05_' },
+  { id: 'training', folder: '06_教育訓練', label: '教育訓練', weight: 5, workHints: ['教育訓練', '訓練', '教學', '操作說明'], suggestTitle: '安排教育訓練並上傳教材至 06_' },
+  { id: 'billing', folder: '07_請款文件', label: '請款', weight: 10, workHints: ['請款', '發票', '收款', '對帳'], suggestTitle: '準備請款文件並上傳至 07_' }
+]);

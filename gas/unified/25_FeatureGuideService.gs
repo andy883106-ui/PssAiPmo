@@ -6,7 +6,8 @@ function getFeatureGuideV23() {
       title: 'PSS AI-PMO 統整版功能說明',
       daily: [
         '每天先看「我的收件匣」：逾期 → 7 日內到期 → 今日新派工 → 後續任務。',
-        '同一工作可跨多日。每天用「回報此工作」寫進度；整項做完才按「標示完成」。',
+        '再看「進度追蹤」：依雲端 01～07 資料夾證據判斷缺哪一段，一鍵建立追蹤事項。',
+        '同一工作可跨多日。每天用「回報此工作」寫進度；整項做完才按「回報並完成」。',
         '回報可勾選「同時完成關聯工作」，或另外填後續事項自動建立待追蹤任務。',
         '專案搜尋輸入 1 個字即篩選；空白連點兩下顯示前 50 筆。'
       ],
@@ -14,6 +15,7 @@ function getFeatureGuideV23() {
         { tab: 'inbox', name: '我的收件匣', from: 'R5.2', text: '個人待辦、逾期與後續任務，避免只在 LINE 貼文字。' },
         { tab: 'work', name: '目前工作', from: 'V22 + R5.3', text: '工作 CRUD、關聯、多附件、回報／完成分離、重複檢查。' },
         { tab: 'calendar', name: '工作日曆', from: 'V22.5', text: '依期限看本月工作，同日多筆以＋N 展開。' },
+        { tab: 'progress', name: '進度追蹤', from: 'V23.1', text: '掃描各專案 01～07 資料夾＋工作／回報，顯示缺件與建議下一步，不自動改專案狀態。' },
         { tab: 'projects', name: '專案管理', from: 'V22 + R5.3', text: '專案主檔、關聯專案、圖檔／CAD／文件、報告設定。' },
         { tab: 'training', name: '教育訓練', from: 'R5.3 / V22', text: '教材綁專案，附件進 06_教育訓練。' },
         { tab: 'thursday', name: '週四會議', from: 'V22 + R5.3', text: '本週完成／未完成／追蹤，可產出會議紀錄。' },
@@ -40,7 +42,7 @@ function getRuntimeHealthV23() {
   return v21Safe_('HEALTH_V23', function() {
     var base = healthCheckV21();
     if (!base.ok) throw new Error(base.message);
-    var extra = [PMO_V21.SHEETS.DELETE_LOG, PMO_V21.SHEETS.TASK_HISTORY, PMO_V21.SHEETS.PROJECT_REPORT, PMO_V21.SHEETS.NAS_EXPORT];
+    var extra = [PMO_V21.SHEETS.DELETE_LOG, PMO_V21.SHEETS.TASK_HISTORY, PMO_V21.SHEETS.PROJECT_REPORT, PMO_V21.SHEETS.NAS_EXPORT, PMO_V21.SHEETS.FOLDER_PROGRESS];
     var db = v21Db_();
     var extraChecks = extra.map(function(name) {
       var sheet = db.getSheetByName(name);

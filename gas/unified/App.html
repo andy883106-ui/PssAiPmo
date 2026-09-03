@@ -1,7 +1,7 @@
 <script>
 (function(){
   'use strict';
-  var state={bootstrap:null,projects:[],work:[],query:'',suggestions:{people:[],eventTitles:[],projectStatuses:[]},training:null,meeting:null,quotes:null,quoteCart:{},quoteQuery:'',projectDetail:null,projectFileCategory:'current',projectFiles:[],calendarMonth:null,calendarData:null,inbox:null,guide:null,health:null};
+  var state={bootstrap:null,projects:[],work:[],query:'',suggestions:{people:[],eventTitles:[],projectStatuses:[]},training:null,meeting:null,quotes:null,quoteCart:{},quoteQuery:'',projectDetail:null,projectFileCategory:'current',projectFiles:[],calendarMonth:null,calendarData:null,inbox:null,guide:null,health:null,progressBoard:null,folderProgress:null};
   var $=function(selector,root){return (root||document).querySelector(selector);};
   var $$=function(selector,root){return Array.prototype.slice.call((root||document).querySelectorAll(selector));};
   function esc(value){return String(value==null?'':value).replace(/[&<>'"]/g,function(char){return {'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char];});}
@@ -39,10 +39,17 @@
     var query=state.query.toLowerCase(),projects=state.projects.filter(function(p){return !query||[p.id,p.name,p.customer,p.owner,p.status].join(' ').toLowerCase().indexOf(query)>=0;}),visible={};
     projects.forEach(function(p){visible[p.id]=true;});renderProjects(projects);renderWork(state.work.filter(function(w){return !query||visible[w.projectId]||[w.title,w.projectName,w.assignee].join(' ').toLowerCase().indexOf(query)>=0;}));
   }
+  var STAGE_HINTS=[['合約／下單',['合約','訂單','下單','議價','簽約']],['圖面送審',['圖面','繪圖','送審','竣工圖','CAD']],['現場施作',['施工','到場','安裝','除錯','修繕','現場']],['驗收',['驗收','測試','交屋','移交']],['教育訓練',['教育訓練','訓練','教學','操作說明']],['請款',['請款','發票','收款','對帳']],['其他追蹤',[]]];
+  function workStageLabel(work){var blob=[work.title,work.type,work.completion].join('');for(var i=0;i<STAGE_HINTS.length;i+=1){if(STAGE_HINTS[i][1].some(function(hint){return blob.indexOf(hint)>=0;}))return STAGE_HINTS[i][0];}return work.status==='事項'?'其他追蹤':'目前處理';}
+  function workRowHtml(work){var follow=work.status==='事項',site=work.projectName||work.projectId||'未指定專案',relation=(work.relations&&work.relations[0])||{},relationText=[relation.relatedWorkTitle,relation.relatedProjectName].filter(Boolean).join('／');return '<article class="work-row '+(follow?'follow':'')+'" data-work="'+esc(work.id)+'"><div><div class="work-title">'+esc(site+'｜'+work.title)+'</div><div class="meta">'+esc(work.projectId)+(relationText?' · 關聯：'+esc(relationText):'')+'</div></div><div><b>'+esc(work.assignee||'未指派')+'</b><div class="meta">'+esc(work.type||'工作事項')+'</div></div><div>'+esc(work.dueDate||'未設期限')+'</div><div><span class="badge '+(follow?'follow':'')+'">'+esc(work.status)+'</span></div></article>';}
   function renderWork(items){
     if(!items.length){$('#workView').innerHTML='<div class="empty">目前沒有符合條件的「事項」或「目前處理」工作。</div>';return;}
-    $('#workView').innerHTML='<div class="work-list">'+items.map(function(work){var follow=work.status==='事項',site=work.projectName||work.projectId||'未指定專案',relation=(work.relations&&work.relations[0])||{},relationText=[relation.relatedWorkTitle,relation.relatedProjectName].filter(Boolean).join('／');return '<article class="work-row '+(follow?'follow':'')+'" data-work="'+esc(work.id)+'"><div><div class="work-title">'+esc(site+'｜'+work.title)+'</div><div class="meta">'+esc(work.projectId)+(relationText?' · 關聯：'+esc(relationText):'')+'</div></div><div><b>'+esc(work.assignee||'未指派')+'</b><div class="meta">'+esc(work.type||'工作事項')+'</div></div><div>'+esc(work.dueDate||'未設期限')+'</div><div><span class="badge '+(follow?'follow':'')+'">'+esc(work.status)+'</span></div></article>';}).join('')+'</div>';
-    $$('[data-work]',$('#workView')).forEach(function(el){el.onclick=function(){openWork(state.work.filter(function(w){return w.id===el.dataset.work;})[0]);};});
+    var groups={};items.forEach(function(work){var label=workStageLabel(work);if(!groups[label])groups[label]=[];groups[label].push(work);});
+    var order=['合約／下單','圖面送審','現場施作','驗收','教育訓練','請款','目前處理','其他追蹤'];
+    var html='<div class="section-head"><div><h2>目前工作（依專案階段）</h2><div class="meta">同一件事先回報，不要每天新開一筆。標題含圖面／施工／驗收等字會自動歸類。</div></div></div>';
+    order.forEach(function(label){var list=groups[label]||[];if(!list.length)return;html+='<div class="inbox-group"><h3>'+esc(label)+' <span class="badge">'+list.length+'</span></h3><div class="work-list">'+list.map(workRowHtml).join('')+'</div></div>';});
+    $('#workView').innerHTML=html;
+    $$('[data-work]',$('#workView')).forEach(function(el){el.onclick=function(){openWork((state.work||[]).concat(items).filter(function(w){return w.id===el.dataset.work;})[0]);};});
   }
   function drawingSyncTools(){return '<div class="module-tools"><div><b>繪圖申請進度</b><div class="meta">先比對目前資料庫，只匯入可唯一對應且已有送出日期的圖面。</div></div><button class="button primary" id="syncDrawingsBtn">同步繪圖進度表</button></div>';}
   function wireDrawingSync(){var button=$('#syncDrawingsBtn');if(button)button.onclick=syncDrawingProgress;}
@@ -78,7 +85,7 @@
     var panel=$('#projectPanel'),d=state.projectDetail,drawings=Array.isArray(d.drawings)?d.drawings:[];
     if(state.projectFileCategory==='current'){
       var relations=Array.isArray(d.relations)?d.relations:[];
-      panel.innerHTML='<div class="callout"><b>系統建議狀態：'+esc(d.suggestedStatus)+'</b><br><span class="meta">僅提供判讀參考；專案狀態由人員確認儲存，不會自動覆寫。</span></div><h3>關聯專案</h3>'+(relations.length?'<div class="relation-list">'+relations.map(function(r){return '<div class="relation-card"><button type="button" class="relation-main" data-open-related="'+esc(r.projectId)+'"><b>'+esc(r.projectName)+'</b><span>'+esc([r.type,r.customer,r.systemType,r.owner?'負責 '+r.owner:''].filter(Boolean).join(' · '))+'</span>'+(r.note?'<small>'+esc(r.note)+'</small>':'')+'</button><button type="button" class="button small danger" data-remove-relation="'+esc(r.id)+'">解除</button></div>';}).join('')+'</div>':'<div class="empty">尚未關聯其他專案，可將同案場的停車場、訪客或門禁系統連結管理。</div>')+'<h3>進行中／待追蹤</h3>'+(d.activeWork.length?d.activeWork.map(function(w){return '<div class="info-block clickable" data-detail-work="'+esc(w.id)+'"><b>'+esc((w.projectName||w.projectId)+'｜'+w.title)+'</b><div class="meta">'+esc([w.status,w.assignee,w.dueDate||'未設期限'].join(' · '))+'</div></div>';}).join(''):'<div class="empty">無目前工作</div>')+'<h3>已送審／圖面紀錄</h3>'+(drawings.length?drawings.map(function(item){var url=safeUrl(item.attachment);return '<div class="info-block"><b>'+esc(item.title||'未命名圖面')+'</b><div class="meta">'+esc([item.submittedAt,item.status,item.review,item.sourceId].filter(Boolean).join(' · '))+'</div>'+(url?'<a class="link" target="_blank" href="'+url+'">開啟圖面</a>':'<span class="meta">來源未附超連結</span>')+'</div>';}).join(''):'<div class="empty">尚無送審圖面紀錄</div>')+'<h3>統一專案歷程</h3><div class="timeline">'+(d.history.length?d.history.map(function(h){return '<div class="timeline-item"><h4>'+esc(h.title||h.type)+'</h4><time>'+esc([h.occurredAt,h.status,h.owner].filter(Boolean).join(' · '))+'</time><p>'+esc(h.content)+'</p>'+(safeUrl(h.link)?'<a class="link" target="_blank" href="'+safeUrl(h.link)+'">開啟附件</a>':'')+'</div>';}).join(''):'<div class="empty">尚無歷程</div>')+'</div>';
+      panel.innerHTML='<div id="folderProgressBox" class="folder-progress-box"><div class="meta">正在比對雲端資料夾與追蹤事項…</div></div><div class="callout"><b>系統建議狀態：'+esc(d.suggestedStatus)+'</b><br><span class="meta">僅提供判讀參考；專案狀態由人員確認儲存，不會自動覆寫。</span></div><h3>關聯專案</h3>'+(relations.length?'<div class="relation-list">'+relations.map(function(r){return '<div class="relation-card"><button type="button" class="relation-main" data-open-related="'+esc(r.projectId)+'"><b>'+esc(r.projectName)+'</b><span>'+esc([r.type,r.customer,r.systemType,r.owner?'負責 '+r.owner:''].filter(Boolean).join(' · '))+'</span>'+(r.note?'<small>'+esc(r.note)+'</small>':'')+'</button><button type="button" class="button small danger" data-remove-relation="'+esc(r.id)+'">解除</button></div>';}).join('')+'</div>':'<div class="empty">尚未關聯其他專案，可將同案場的停車場、訪客或門禁系統連結管理。</div>')+'<h3>進行中／待追蹤</h3>'+(d.activeWork.length?d.activeWork.map(function(w){return '<div class="info-block clickable" data-detail-work="'+esc(w.id)+'"><b>'+esc((w.projectName||w.projectId)+'｜'+w.title)+'</b><div class="meta">'+esc([w.status,w.assignee,w.dueDate||'未設期限'].join(' · '))+'</div></div>';}).join(''):'<div class="empty">無目前工作</div>')+'<h3>已送審／圖面紀錄</h3>'+(drawings.length?drawings.map(function(item){var url=safeUrl(item.attachment);return '<div class="info-block"><b>'+esc(item.title||'未命名圖面')+'</b><div class="meta">'+esc([item.submittedAt,item.status,item.review,item.sourceId].filter(Boolean).join(' · '))+'</div>'+(url?'<a class="link" target="_blank" href="'+url+'">開啟圖面</a>':'<span class="meta">來源未附超連結</span>')+'</div>';}).join(''):'<div class="empty">尚無送審圖面紀錄</div>')+'<h3>統一專案歷程</h3><div class="timeline">'+(d.history.length?d.history.map(function(h){return '<div class="timeline-item"><h4>'+esc(h.title||h.type)+'</h4><time>'+esc([h.occurredAt,h.status,h.owner].filter(Boolean).join(' · '))+'</time><p>'+esc(h.content)+'</p>'+(safeUrl(h.link)?'<a class="link" target="_blank" href="'+safeUrl(h.link)+'">開啟附件</a>':'')+'</div>';}).join(''):'<div class="empty">尚無歷程</div>')+'</div>';
       panel.innerHTML=panel.innerHTML.replace('<h3>進行中／待追蹤</h3>','<h3>事項／目前處理</h3>');
       var allWork=Array.isArray(d.allWork)?d.allWork:[],reports=Array.isArray(d.reports)?d.reports:[];
       panel.insertAdjacentHTML('beforeend','<h3>完整工作流程（可編輯舊說明）</h3>'+(allWork.length?'<div class="workflow-record-list">'+allWork.map(function(w){return '<div class="workflow-record"><div><b>'+esc(w.title)+'</b><div class="meta">'+esc([w.status,w.assignee,w.dueDate||'未設期限',w.updatedAt].filter(Boolean).join(' · '))+'</div>'+(w.completion?'<p>'+esc(w.completion)+'</p>':'')+'<div class="meta">附件 '+esc((w.attachments||[]).length)+' 個</div></div><button type="button" class="button small ghost" data-edit-work-record="'+esc(w.id)+'">編輯</button></div>';}).join('')+'</div>':'<div class="empty compact">尚無工作流程紀錄。</div>')+'<h3>工作回報紀錄（可編輯內容與附件）</h3>'+(reports.length?'<div class="workflow-record-list">'+reports.map(function(r){return '<div class="workflow-record"><div><b>'+esc(r.title||'工作回報')+'</b><div class="meta">'+esc([r.date,r.employee,r.supervisor].filter(Boolean).join(' · '))+'</div><p>'+esc(r.completed||'')+(r.followUp?'\n後續：'+esc(r.followUp):'')+'</p><div class="meta">附件 '+esc((r.attachments||[]).length)+' 個</div></div><button type="button" class="button small ghost" data-edit-report-record="'+esc(r.id)+'">編輯</button></div>';}).join('')+'</div>':'<div class="empty compact">尚無工作回報。</div>'));
@@ -86,7 +93,7 @@
       $$('[data-edit-work-record]',panel).forEach(function(el){el.onclick=function(){var w=allWork.filter(function(x){return x.id===el.dataset.editWorkRecord;})[0];if(w){$('#detailDialog').close();openWork(w);}};});
       $$('[data-edit-report-record]',panel).forEach(function(el){el.onclick=function(){var r=reports.filter(function(x){return x.id===el.dataset.editReportRecord;})[0];if(r){$('#detailDialog').close();openReportRecordV224(r);}};});
       $$('[data-open-related]',panel).forEach(function(el){el.onclick=function(){$('#detailDialog').close();openProject(el.dataset.openRelated);};});
-      $$('[data-remove-relation]',panel).forEach(function(el){el.onclick=async function(){if(!window.confirm('確定解除這筆專案關聯？專案與檔案不會刪除。'))return;busy(true);try{var r=await api('removeProjectRelation',{id:el.dataset.removeRelation});if(!r.ok)throw new Error(r.message);var detail=await api('project',{projectId:state.projectDetail.project.id});if(!detail.ok)throw new Error(detail.message);state.projectDetail=detail.data;toast('專案關聯已解除');renderProjectDialog();}catch(error){toast(error.message||error,true);}finally{busy(false);}};});return;
+      $$('[data-remove-relation]',panel).forEach(function(el){el.onclick=async function(){if(!window.confirm('確定解除這筆專案關聯？專案與檔案不會刪除。'))loadProjectFolderProgress();return;busy(true);try{var r=await api('removeProjectRelation',{id:el.dataset.removeRelation});if(!r.ok)throw new Error(r.message);var detail=await api('project',{projectId:state.projectDetail.project.id});if(!detail.ok)throw new Error(detail.message);state.projectDetail=detail.data;toast('專案關聯已解除');renderProjectDialog();}catch(error){toast(error.message||error,true);}finally{busy(false);}};});return;
     }
     panel.innerHTML='<div class="module-tools"><input id="folderFileSearch" placeholder="搜尋此專案資料夾內的檔名"><button class="button primary" id="searchFolderBtn">搜尋</button></div><div id="folderFiles"><div class="empty">按「搜尋」載入，檔案依最後修改時間新到舊排序。</div></div>';$('#searchFolderBtn').onclick=loadProjectFiles;loadProjectFiles();
   }
@@ -307,8 +314,8 @@
     function row(work){
       return '<article class="work-row '+(work.status==='事項'?'follow':'')+'" data-inbox-work="'+esc(work.id)+'"><div><div class="work-title">'+esc((work.projectName||work.projectId)+'｜'+work.title)+'</div><div class="meta">'+esc([work.assignee,work.type,work.dueDate||'未設期限'].filter(Boolean).join(' · '))+'</div></div><div><span class="badge '+(work.status==='事項'?'follow':'')+'">'+esc(work.status)+'</span></div></article>';
     }
-    var html='<div class="section-head"><div><h2>我的工作收件匣</h2><div class="meta">登入帳號：'+esc(data.user||'')+'｜先處理逾期，同一工作可跨日回報。</div></div></div>';
-    if(!data.counts||!data.counts.total){html+='<div class="empty">目前沒有指派給你的進行中工作。</div>';$('#inboxView').innerHTML=html;return;}
+    var html='<div class="section-head"><div><h2>我的工作收件匣</h2><div class="meta">登入帳號：'+esc(data.user||'')+'｜先處理逾期，同一工作可跨日回報。專案缺哪一段請看「進度追蹤」。</div></div></div>';
+    if(!data.counts||!data.counts.total){html+='<div class="empty">目前沒有指派給你的進行中工作。可到「進度追蹤」依資料夾缺口建立下一步事項。</div>';$('#inboxView').innerHTML=html;return;}
     order.forEach(function(pair){
       var items=(data.groups&&data.groups[pair[0]])||[];
       html+='<div class="inbox-group"><h3>'+esc(pair[1])+' <span class="badge">'+items.length+'</span></h3>'+(items.length?items.map(row).join(''):'<div class="empty compact">無</div>')+'</div>';
@@ -401,7 +408,89 @@
     };
   }
 
-  async function switchTab(tab){$$('.tab').forEach(function(x){x.classList.toggle('active',x.dataset.tab===tab);});$$('.view').forEach(function(view){view.classList.add('hidden');});$('#'+tab+'View').classList.remove('hidden');if(tab==='training'&&!state.training)await loadTraining('');if(tab==='thursday'&&!state.meeting)await loadMeeting(false);if(tab==='quotes'&&!state.quotes)await loadQuotes('');if(tab==='calendar'&&!state.calendarData)await loadCalendar();if(tab==='inbox')await loadInbox();if(tab==='tools')await renderTools();}
+
+  function stageStateLabel(state){return {empty:'缺資料',in_progress:'追蹤中',partial:'有檔待對',evidenced:'已有證據'}[state]||state;}
+  function renderFolderProgressBox(board){
+    var box=$('#folderProgressBox');if(!box||!board)return;
+    var stages=board.stages||[];
+    var html='<div class="section-head"><div><h3>雲端資料夾進度</h3><div class="meta">依 01～07 資料夾檔案＋工作／回報推估，不自動改專案狀態。'+(board.scannedAt?' 掃描：'+esc(board.scannedAt):'')+'</div></div><div><b class="progress-score">'+esc(board.score)+'%</b></div></div>';
+    html+='<div class="progress-next"><b>下一步：</b>'+esc(board.nextAction)+'</div>';
+    html+='<div class="stage-grid">'+stages.map(function(stage){
+      return '<div class="stage-card state-'+esc(stage.state)+'"><div class="stage-head"><b>'+esc(stage.label)+'</b><span class="badge">'+esc(stageStateLabel(stage.state))+'</span></div><div class="meta">資料夾檔案 '+esc(stage.fileCount)+'｜工作 '+esc(stage.activeCount)+' 進行 / '+esc(stage.doneCount)+' 完成｜回報 '+esc(stage.reportCount)+'</div>'+(stage.latestFile?'<div class="meta">最新：'+esc(stage.latestFile)+'</div>':'')+'<div class="stage-actions">'+(stage.folderUrl?'<a class="link" target="_blank" href="'+safeUrl(stage.folderUrl)+'">開資料夾</a>':'')+(stage.state==='empty'||stage.state==='in_progress'?'<button type="button" class="button small ghost" data-ensure-stage="'+esc(stage.id)+'">建立追蹤事項</button>':'')+'</div></div>';
+    }).join('')+'</div>';
+    box.innerHTML=html;
+    $$('[data-ensure-stage]',box).forEach(function(button){
+      button.onclick=async function(){
+        busy(true);
+        try{
+          var response=await api('ensureStageWork',{projectId:board.projectId,stageId:button.dataset.ensureStage});
+          if(!response.ok)throw new Error(response.message);
+          toast(response.data.created?'已建立階段追蹤事項':'已有相同階段的追蹤工作');
+          var detail=await api('project',{projectId:board.projectId});
+          if(detail.ok){state.projectDetail=detail.data;renderProjectDialog();}
+          await load();
+        }catch(error){toast(error.message||error,true);}
+        finally{busy(false);}
+      };
+    });
+  }
+  async function loadProjectFolderProgress(){
+    var box=$('#folderProgressBox'),detail=state.projectDetail;if(!box||!detail||!detail.project)return;
+    try{
+      var response=await api('folderProgress',{projectId:detail.project.id});
+      if(!response.ok)throw new Error(response.message);
+      state.folderProgress=response.data;
+      renderFolderProgressBox(response.data);
+    }catch(error){
+      box.innerHTML='<div class="callout">資料夾進度讀取失敗：'+esc(error.message||error)+'</div>';
+    }
+  }
+  async function loadProgressBoard(){
+    busy(true);
+    try{
+      var response=await api('progressBoard',{query:state.query||''});
+      if(!response.ok)throw new Error(response.message);
+      state.progressBoard=response.data;
+      renderProgressBoard();
+    }catch(error){
+      $('#progressView').innerHTML='<div class="empty">進度看板載入失敗：'+esc(error.message||error)+'</div>';
+      toast(error.message||error,true);
+    }finally{busy(false);}
+  }
+  function renderProgressBoard(){
+    var data=state.progressBoard||{cards:[],stages:[],groups:{}};
+    var html='<div class="section-head"><div><h2>專案進度追蹤</h2><div class="meta">比對各專案雲端標準資料夾與工作／回報。開啟單一專案會掃描 Drive 並快取。清單先依工作標題推估，不改寫專案狀態。</div></div></div>';
+    html+='<div class="summary progress-summary"><div class="stat"><b>'+esc(data.total||0)+'</b><span>專案</span></div><div class="stat"><b>'+esc(data.missingFolder||0)+'</b><span>缺雲端資料夾</span></div><div class="stat"><b>'+esc(data.complete||0)+'</b><span>階段證據齊</span></div>'+(data.stages||[]).slice(0,4).map(function(stage){return '<div class="stat"><b>'+esc(stage.count)+'</b><span>'+esc(stage.label)+'</span></div>';}).join('')+'</div>';
+    function cardHtml(card){
+      return '<article class="project-card full progress-card" data-progress-project="'+esc(card.projectId)+'"><h3>'+esc(card.projectName)+'</h3><div class="meta">'+esc(card.projectId)+' · '+esc(card.status||'')+' · 負責 '+esc(card.owner||'未設定')+'</div><div class="progress-bar"><i style="width:'+esc(card.score)+'%"></i></div><div class="meta">資料夾推估 '+esc(card.score)+'％ · 表上進度 '+esc(card.recordedProgress)+'％ · 逾期 '+esc(card.overdueCount)+'</div><p><b>'+esc(card.currentStageLabel)+'</b>　'+esc(card.nextAction)+'</p><div class="stage-actions"><button type="button" class="button small ghost" data-open-progress="'+esc(card.projectId)+'">開啟專案</button>'+(card.bottleneckId?'<button type="button" class="button small primary" data-board-stage="'+esc(card.projectId)+'" data-stage-id="'+esc(card.bottleneckId)+'">建立下一步追蹤</button>':'')+'</div></article>';
+    }
+    var order=[{id:'nofolder',label:'尚未綁定資料夾'},{id:'contract',label:'卡在合約／下單'},{id:'drawing',label:'卡在圖面'},{id:'tracking',label:'需更新追蹤紀錄'},{id:'site',label:'卡在現場施作'},{id:'accept',label:'卡在驗收'},{id:'training',label:'待教育訓練'},{id:'billing',label:'卡在請款'},{id:'done',label:'階段證據較齊'}];
+    order.forEach(function(group){
+      var list=(data.groups&&data.groups[group.id])||[];
+      if(!list.length)return;
+      html+='<div class="inbox-group"><h3>'+esc(group.label)+' <span class="badge">'+list.length+'</span></h3><div class="projects">'+list.map(cardHtml).join('')+'</div></div>';
+    });
+    if(!(data.cards||[]).length)html+='<div class="empty">目前沒有可顯示的專案進度。</div>';
+    $('#progressView').innerHTML=html;
+    $$('[data-open-progress]',$('#progressView')).forEach(function(button){button.onclick=function(){openProject(button.dataset.openProgress);};});
+    $$('[data-progress-project]',$('#progressView')).forEach(function(card){card.onclick=function(event){if(event.target.closest('button'))return;openProject(card.dataset.progressProject);};});
+    $$('[data-board-stage]',$('#progressView')).forEach(function(button){
+      button.onclick=async function(event){
+        event.stopPropagation();
+        busy(true);
+        try{
+          var response=await api('ensureStageWork',{projectId:button.dataset.boardStage,stageId:button.dataset.stageId});
+          if(!response.ok)throw new Error(response.message);
+          toast(response.data.created?'已建立下一步追蹤事項':'此階段已有進行中工作');
+          await load();
+          await loadProgressBoard();
+        }catch(error){toast(error.message||error,true);}
+        finally{busy(false);}
+      };
+    });
+  }
+
+  async function switchTab(tab){$$('.tab').forEach(function(x){x.classList.toggle('active',x.dataset.tab===tab);});$$('.view').forEach(function(view){view.classList.add('hidden');});$('#'+tab+'View').classList.remove('hidden');if(tab==='training'&&!state.training)await loadTraining('');if(tab==='thursday'&&!state.meeting)await loadMeeting(false);if(tab==='quotes'&&!state.quotes)await loadQuotes('');if(tab==='calendar'&&!state.calendarData)await loadCalendar();if(tab==='inbox')await loadInbox();if(tab==='progress')await loadProgressBoard();if(tab==='tools')await renderTools();}
   $$('.tab').forEach(function(tab){tab.onclick=function(){switchTab(tab.dataset.tab);};});var searchTimer;$('#projectSearch').oninput=function(event){window.clearTimeout(searchTimer);searchTimer=window.setTimeout(function(){state.query=event.target.value.trim();filterAndRender();},160);};$('#projectSearch').ondblclick=function(){this.value='';state.query='';filterAndRender();};$('#newProjectBtn').onclick=function(){openProjectForm();};$('#newWorkBtn').onclick=function(){openWork();};$('#newReportBtn').onclick=function(){pendingReportEditV224=null;openReport();};if($('#helpBtn'))$('#helpBtn').onclick=openHelp;document.addEventListener('keydown',function(event){if(event.key==='F1'){event.preventDefault();openHelp();}});installV224FormEnhancements();load();
 })();
 </script>

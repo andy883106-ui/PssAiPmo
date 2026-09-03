@@ -53,7 +53,10 @@ function runV21SelfTests() {
   assert('工作狀態含軟刪除',PMO_V21.WORK_STATUSES.join('|')==='事項|目前處理|無須追蹤|完成|已刪除');
   assert('無須追蹤與完成與已刪除不列目前工作',PMO_V21.ACTIVE_STATUSES.indexOf('無須追蹤')<0&&PMO_V21.ACTIVE_STATUSES.indexOf('完成')<0&&PMO_V21.ACTIVE_STATUSES.indexOf('已刪除')<0);
   assert('已刪除狀態正規化',v21NormalizeStatus_('刪除')==='已刪除');
-  assert('統整版版本號',PMO_V21.VERSION==='23.0.0');
+  assert('統整版版本號',PMO_V21.VERSION==='23.1.0');
+  assert('資料夾進度階段為7段',V23_PROGRESS_STAGES.length===7&&V23_PROGRESS_STAGES[0].id==='contract');
+  assert('工作標題可對到圖面階段',v23WorkMatchesStage_({title:'停車場竣工圖送審',type:'一般工作',completion:''},V23_PROGRESS_STAGES[1])===true);
+  assert('無關標題不對到請款',v23WorkMatchesStage_({title:'現場安裝讀卡機',type:'一般工作',completion:''},V23_PROGRESS_STAGES[6])===false);
   assert('部門專案管理試算表已設定',PMO_V21.PROGRESS_DATABASE_ID==='1Oh2pnlZwusM7E-CKMr-eYYYOToTzHtJge_2yiqEypcM');
   assert('系統類型包含批價機',V21_SYSTEM_TYPES.indexOf('批價機系統')>=0);
   assert('設備下載連結轉換',v224EquipmentDownloadUrl_('https://drive.google.com/file/d/12345678901234567890/view').indexOf('export=download')>=0);
