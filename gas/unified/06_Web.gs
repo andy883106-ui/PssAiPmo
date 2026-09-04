@@ -7,7 +7,7 @@ function doGet(event) {
     if (params.tool === 'tenant') return HtmlService.createHtmlOutputFromFile('TenantEditor').setTitle('租戶底圖標題編輯器').addMetaTag('viewport','width=device-width, initial-scale=1');
     var template = HtmlService.createTemplateFromFile('Index');
     template.version = PMO_V21.VERSION;
-    return template.evaluate().setTitle('PSS AI-PMO V23.1.0 統整版').addMetaTag('viewport','width=device-width, initial-scale=1');
+    return template.evaluate().setTitle('PSS AI-PMO V23.2.0 統整版').addMetaTag('viewport','width=device-width, initial-scale=1');
   } catch (error) {
     return HtmlService.createHtmlOutput(v21BootErrorHtml_(error)).setTitle('PSS AI-PMO 啟動檢查')
       .addMetaTag('viewport','width=device-width, initial-scale=1');
@@ -78,6 +78,9 @@ function apiV21(request) {
     progressBoard: function(){ return getProgressBoardV23(payload); },
     ensureStageWork: function(){ return ensureStageTrackingWorkV23(payload); },
     refreshFolderProgress: function(){ return refreshFolderProgressV23(payload); },
+    workTemplates: function(){ return listWorkTemplatesV23(payload); },
+    applyWorkTemplate: function(){ return applyWorkTemplateV23(payload); },
+    seedWorkTemplates: function(){ return seedProjectWorkTemplatesV23(payload); },
     featureGuide: function(){ return getFeatureGuideV23(); },
     healthV23: function(){ return getRuntimeHealthV23(); },
     saveReport: function(){ return saveReportV21(payload); },

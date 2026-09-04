@@ -156,8 +156,58 @@
 
   function openWork(work){
     work=work||{};var dialog=$('#workDialog'),relation=(work.relations&&work.relations[0])||{},relatedWorkOptions=[{value:'',label:'不關聯其他工作'}].concat(state.work.filter(function(item){return item.id!==work.id;}).map(function(item){return {value:item.id,label:[item.projectName||item.projectId,item.title,item.status].filter(Boolean).join('｜')};}));
-    $('#workBody').innerHTML='<form id="workForm"><div class="dialog-head"><div><h2>'+(work.id?'編輯工作事項':'新增工作事項')+'</h2><div class="meta">V23｜回報與完成分離、關聯派工、軟刪除可復原</div></div><button type="button" class="icon-button" data-close>×</button></div><div class="dialog-content"><div class="form-grid"><input type="hidden" name="id" value="'+esc(work.id||'')+'"><div class="field full"><label>搜尋並選擇專案</label>'+projectPickerHtml(work.projectId,false,true)+'</div><div class="field full"><label>工作標題（輸入文字會快篩既有事件）</label><input list="eventTitleList" name="title" value="'+esc(work.title||'')+'" required></div><div class="field"><label>工作類型</label><input name="type" value="'+esc(work.type||'一般工作')+'"></div><div class="field"><label>負責人</label><input list="peopleList" name="assignee" value="'+esc(work.assignee||'')+'"></div><div class="field"><label>協作人</label><input list="peopleList" name="collaborator" value="'+esc(work.collaborator||'')+'"></div><div class="field"><label>狀態</label><select name="status">'+options(['事項','目前處理','無須追蹤','完成'],work.status||'事項')+'</select></div><div class="field"><label>優先級</label><select name="priority">'+options(['一般','高','緊急'],work.priority||'一般')+'</select></div><div class="field"><label>開始日</label><input type="date" name="startDate" value="'+esc(work.startDate||localDate())+'"></div><div class="field"><label>預計完成日</label><input type="date" name="dueDate" value="'+esc(work.dueDate||'')+'"></div><div class="field full relation-section"><h3>工作事項關聯</h3><div class="meta">可同時關聯另一筆工作與另一個專案場地，方便跨系統、不同業主或前後置事項追蹤。</div></div><div class="field full"><label>關聯工作事項</label><select name="relatedWorkId">'+options(relatedWorkOptions,relation.relatedWorkId||'')+'</select></div><div class="field full"><label>關聯專案場地（選填，須與目前專案不同）</label>'+namedProjectPickerHtml('relatedProjectId',relation.relatedProjectId||'',true,true)+'</div><div class="field"><label>關聯類型</label><select name="relationType">'+options(['前置工作','後續工作','同案場不同業主','停車場／訪客／門禁關聯','相關工作／場地'],relation.type||'相關工作／場地')+'</select></div><div class="field full"><label>關聯說明</label><textarea name="relationNote" placeholder="例如：訪客系統由另一業主負責，須同步停車場進場日">'+esc(relation.note||'')+'</textarea></div><div class="field full"><label>完成內容</label><textarea name="completion">'+esc(work.completion||'')+'</textarea></div><div class="field full"><label>附件</label>'+attachmentEditorHtml(work.attachments,work.attachment,!!work.projectId||!work.id)+'</div></div></div><div class="dialog-actions"><button type="button" class="button ghost" data-close>取消</button>'+(work.id?'<button type="button" class="button ghost" id="reportWorkBtn">回報此工作（不完成）</button><button type="button" class="button ghost" id="relatedTaskBtn">新增關聯派工</button><button type="button" class="button ghost" id="completeNoTrackBtn">完成（不追蹤）</button><button type="button" class="button danger" id="completeWorkBtn">回報並完成</button><button type="button" class="button ghost" id="deleteWorkBtn">刪除工作</button>':'')+'<button class="button primary">儲存</button></div></form>';
-    dialog.showModal();wireProjectPicker($('#workForm'),false);wireNamedProjectPicker($('#workForm'),'relatedProjectId',true);wireAttachmentEditor($('#workForm'));$$('[data-close]',dialog).forEach(function(b){b.onclick=function(){dialog.close();};});$('#workForm').onsubmit=function(event){event.preventDefault();try{validateProjectPicker(event.currentTarget,false);validateNamedProjectPicker(event.currentTarget,'relatedProjectId',true);saveWorkForm(false);}catch(error){toast(error.message||error,true);}};if($('#completeWorkBtn'))$('#completeWorkBtn').onclick=function(){try{validateProjectPicker($('#workForm'),false);validateNamedProjectPicker($('#workForm'),'relatedProjectId',true);saveWorkForm(true);}catch(error){toast(error.message||error,true);}};if($('#reportWorkBtn'))$('#reportWorkBtn').onclick=function(){dialog.close();openReport(work);};if($('#relatedTaskBtn'))$('#relatedTaskBtn').onclick=function(){openRelatedTaskDialog(work);};if($('#completeNoTrackBtn'))$('#completeNoTrackBtn').onclick=function(){try{validateProjectPicker($('#workForm'),false);validateNamedProjectPicker($('#workForm'),'relatedProjectId',true);saveWorkForm('noTrack');}catch(error){toast(error.message||error,true);}};if($('#deleteWorkBtn'))$('#deleteWorkBtn').onclick=async function(){if(!window.confirm('確定將此工作標示為已刪除？\n\n可從工具頁復原。Drive 檔案會保留。'))return;busy(true);try{var response=await api('deleteWork',{id:work.id});if(!response.ok)throw new Error(response.message);dialog.close();toast('工作已軟刪除，可復原');await load();if(state.calendarData)await loadCalendar(state.calendarMonth);}catch(error){toast(error.message||error,true);}finally{busy(false);}};
+    var templateField=work.id?'':'<div class="field full"><label>標準工作樣板（依專案系統類型）</label><select name="templateId" id="workTemplateSelect"><option value="">手動輸入標題</option></select><div class="meta" id="workTemplateHint">選專案後會載入停車場／門禁／訪客等樣板。</div></div>';
+    $('#workBody').innerHTML='<form id="workForm"><div class="dialog-head"><div><h2>'+(work.id?'編輯工作事項':'新增工作事項')+'</h2><div class="meta">V23.2｜樣板快速建單、回報與完成分離、關聯派工、軟刪除可復原</div></div><button type="button" class="icon-button" data-close>×</button></div><div class="dialog-content"><div class="form-grid"><input type="hidden" name="id" value="'+esc(work.id||'')+'"><div class="field full"><label>搜尋並選擇專案</label>'+projectPickerHtml(work.projectId,false,true)+'</div>'+templateField+'<div class="field full"><label>工作標題（輸入文字會快篩既有事件）</label><input list="eventTitleList" name="title" value="'+esc(work.title||'')+'" required></div><div class="field"><label>工作類型</label><input name="type" value="'+esc(work.type||'一般工作')+'"></div><div class="field"><label>負責人</label><input list="peopleList" name="assignee" value="'+esc(work.assignee||'')+'"></div><div class="field"><label>協作人</label><input list="peopleList" name="collaborator" value="'+esc(work.collaborator||'')+'"></div><div class="field"><label>狀態</label><select name="status">'+options(['事項','目前處理','無須追蹤','完成'],work.status||'事項')+'</select></div><div class="field"><label>優先級</label><select name="priority">'+options(['一般','高','緊急'],work.priority||'一般')+'</select></div><div class="field"><label>開始日</label><input type="date" name="startDate" value="'+esc(work.startDate||localDate())+'"></div><div class="field"><label>預計完成日</label><input type="date" name="dueDate" value="'+esc(work.dueDate||'')+'"></div><div class="field full relation-section"><h3>工作事項關聯</h3><div class="meta">可同時關聯另一筆工作與另一個專案場地，方便跨系統、不同業主或前後置事項追蹤。</div></div><div class="field full"><label>關聯工作事項</label><select name="relatedWorkId">'+options(relatedWorkOptions,relation.relatedWorkId||'')+'</select></div><div class="field full"><label>關聯專案場地（選填，須與目前專案不同）</label>'+namedProjectPickerHtml('relatedProjectId',relation.relatedProjectId||'',true,true)+'</div><div class="field"><label>關聯類型</label><select name="relationType">'+options(['前置工作','後續工作','同案場不同業主','停車場／訪客／門禁關聯','相關工作／場地'],relation.type||'相關工作／場地')+'</select></div><div class="field full"><label>關聯說明</label><textarea name="relationNote" placeholder="例如：訪客系統由另一業主負責，須同步停車場進場日">'+esc(relation.note||'')+'</textarea></div><div class="field full"><label>完成內容</label><textarea name="completion">'+esc(work.completion||'')+'</textarea></div><div class="field full"><label>附件</label>'+attachmentEditorHtml(work.attachments,work.attachment,!!work.projectId||!work.id)+'</div></div></div><div class="dialog-actions"><button type="button" class="button ghost" data-close>取消</button>'+(work.id?'<button type="button" class="button ghost" id="reportWorkBtn">回報此工作（不完成）</button><button type="button" class="button ghost" id="relatedTaskBtn">新增關聯派工</button><button type="button" class="button ghost" id="completeNoTrackBtn">完成（不追蹤）</button><button type="button" class="button danger" id="completeWorkBtn">回報並完成</button><button type="button" class="button ghost" id="deleteWorkBtn">刪除工作</button>':'')+'<button class="button primary">儲存</button></div></form>';
+    dialog.showModal();wireProjectPicker($('#workForm'),false);wireNamedProjectPicker($('#workForm'),'relatedProjectId',true);wireAttachmentEditor($('#workForm'));if(!work.id)wireWorkTemplates($('#workForm'),work.projectId);$$('[data-close]',dialog).forEach(function(b){b.onclick=function(){dialog.close();};});$('#workForm').onsubmit=function(event){event.preventDefault();try{validateProjectPicker(event.currentTarget,false);validateNamedProjectPicker(event.currentTarget,'relatedProjectId',true);saveWorkForm(false);}catch(error){toast(error.message||error,true);}};if($('#completeWorkBtn'))$('#completeWorkBtn').onclick=function(){try{validateProjectPicker($('#workForm'),false);validateNamedProjectPicker($('#workForm'),'relatedProjectId',true);saveWorkForm(true);}catch(error){toast(error.message||error,true);}};if($('#reportWorkBtn'))$('#reportWorkBtn').onclick=function(){dialog.close();openReport(work);};if($('#relatedTaskBtn'))$('#relatedTaskBtn').onclick=function(){openRelatedTaskDialog(work);};if($('#completeNoTrackBtn'))$('#completeNoTrackBtn').onclick=function(){try{validateProjectPicker($('#workForm'),false);validateNamedProjectPicker($('#workForm'),'relatedProjectId',true);saveWorkForm('noTrack');}catch(error){toast(error.message||error,true);}};if($('#deleteWorkBtn'))$('#deleteWorkBtn').onclick=async function(){if(!window.confirm('確定將此工作標示為已刪除？\n\n可從工具頁復原。Drive 檔案會保留。'))return;busy(true);try{var response=await api('deleteWork',{id:work.id});if(!response.ok)throw new Error(response.message);dialog.close();toast('工作已軟刪除，可復原');await load();if(state.calendarData)await loadCalendar(state.calendarMonth);}catch(error){toast(error.message||error,true);}finally{busy(false);}};
+  }
+  async function wireWorkTemplates(form,projectId){
+    if(!form||!$('#workTemplateSelect'))return;
+    async function refresh(){
+      var pid=form.elements.projectId?form.elements.projectId.value:'';
+      var project=(state.projects||[]).filter(function(item){return item.id===pid;})[0];
+      var systemType=project&&project.systemType||'';
+      var select=$('#workTemplateSelect'),hint=$('#workTemplateHint');
+      select.innerHTML='<option value="">手動輸入標題</option>';
+      if(!pid){hint.textContent='先選專案後載入樣板。';return;}
+      try{
+        var response=await api('workTemplates',{systemType:systemType});
+        if(!response.ok)throw new Error(response.message);
+        var templates=response.data.templates||[];
+        hint.textContent='目前套用：'+(response.data.systemType||'通用')+(systemType&&response.data.systemType!==systemType?'（由「'+systemType+'」對應）':'');
+        templates.forEach(function(item){
+          var opt=document.createElement('option');
+          opt.value=item.id;
+          opt.textContent=(item.stageLabel||'')+'｜'+item.title;
+          opt.dataset.title=item.title;
+          opt.dataset.type=item.type||'階段追蹤';
+          opt.dataset.days=String(item.days||7);
+          select.appendChild(opt);
+        });
+      }catch(error){hint.textContent='樣板載入失敗：'+(error.message||error);}
+    }
+    $('#workTemplateSelect').onchange=function(){
+      var opt=this.options[this.selectedIndex];
+      if(!opt||!opt.value)return;
+      form.elements.title.value=opt.dataset.title||'';
+      form.elements.type.value=opt.dataset.type||'階段追蹤';
+      if(form.elements.dueDate&&!form.elements.dueDate.value){
+        var days=Number(opt.dataset.days||7),date=new Date();
+        date.setDate(date.getDate()+days);
+        form.elements.dueDate.value=date.toISOString().slice(0,10);
+      }
+    };
+    var projectInput=form.querySelector('[name="projectId"]');
+    if(projectInput){
+      projectInput.addEventListener('change',refresh);
+      var observer=new MutationObserver(refresh);
+      observer.observe(projectInput,{attributes:true,attributeFilter:['value']});
+    }
+    var pickerHidden=form.querySelector('input[name="projectId"]');
+    if(pickerHidden){
+      var last=pickerHidden.value;
+      setInterval(function(){if(pickerHidden.value!==last){last=pickerHidden.value;refresh();}},400);
+    }
+    await refresh();
   }
   async function saveWorkForm(mode){var form=$('#workForm'),payload=formObject(form);if(mode==='noTrack'){payload.status='完成';payload.progress=100;if(!String(payload.completion||'').trim())payload.completion='工作項目已完成（不追蹤）。';}busy(true);try{await collectAndUploadAttachments(form,payload);var response=await api(mode==='noTrack'?'completeWorkNoTrack':(mode?'completeWork':'saveWork'),payload);if(!response.ok)throw new Error(response.message);$('#workDialog').close();toast(mode?'任務已完成':'工作事項已儲存');await load();if(state.calendarData)await loadCalendar(state.calendarMonth);}catch(error){toast(error.message||error,true);}finally{busy(false);}}
   function openReport(related){
@@ -309,13 +359,18 @@
     }
   }
   function renderInbox(){
-    var data=state.inbox||{groups:{},counts:{}};
-    var order=[['overdue','逾期未完成'],['dueSoon','7 日內到期'],['todayAssigned','今日新派工'],['followUp','後續任務'],['inProgress','進行中']];
+    var data=state.inbox||{groups:{},counts:{},dailyBrief:{}};
+    var brief=data.dailyBrief||{};
+    var order=[['overdue','逾期未完成'],['needsReportToday','今日待回報'],['dueSoon','7 日內到期'],['todayAssigned','今日新派工'],['followUp','後續任務'],['inProgress','進行中']];
     function row(work){
-      return '<article class="work-row '+(work.status==='事項'?'follow':'')+'" data-inbox-work="'+esc(work.id)+'"><div><div class="work-title">'+esc((work.projectName||work.projectId)+'｜'+work.title)+'</div><div class="meta">'+esc([work.assignee,work.type,work.dueDate||'未設期限'].filter(Boolean).join(' · '))+'</div></div><div><span class="badge '+(work.status==='事項'?'follow':'')+'">'+esc(work.status)+'</span></div></article>';
+      return '<article class="work-row '+(work.status==='事項'?'follow':'')+'" data-inbox-work="'+esc(work.id)+'"><div><div class="work-title">'+esc((work.projectName||work.projectId)+'｜'+work.title)+'</div><div class="meta">'+esc([work.assignee,work.type,work.dueDate||'未設期限'].filter(Boolean).join(' · '))+(work.reportedToday?' · 今日已回報':'')+'</div></div><div><span class="badge '+(work.status==='事項'?'follow':'')+'">'+esc(work.status)+'</span></div></article>';
     }
-    var html='<div class="section-head"><div><h2>我的工作收件匣</h2><div class="meta">登入帳號：'+esc(data.user||'')+'｜先處理逾期，同一工作可跨日回報。專案缺哪一段請看「進度追蹤」。</div></div></div>';
-    if(!data.counts||!data.counts.total){html+='<div class="empty">目前沒有指派給你的進行中工作。可到「進度追蹤」依資料夾缺口建立下一步事項。</div>';$('#inboxView').innerHTML=html;return;}
+    var html='<div class="section-head"><div><h2>我的工作收件匣</h2><div class="meta">登入帳號：'+esc(data.user||'')+(data.identityMatched?'':' ｜若收件匣常為空，請在人員資料補上對應 Email')+'｜先處理逾期與今日待回報。專案缺哪一段請看「進度追蹤」。</div></div></div>';
+    html+='<div class="summary progress-summary daily-brief"><div class="stat"><b>'+esc(brief.overdue||0)+'</b><span>逾期</span></div><div class="stat"><b>'+esc(brief.needsReportToday||0)+'</b><span>今日待回報</span></div><div class="stat"><b>'+esc(brief.dueSoon||0)+'</b><span>7 日內到期</span></div><div class="stat"><b>'+esc((data.counts&&data.counts.total)||0)+'</b><span>我的進行中</span></div></div>';
+    if((brief.processingTop||[]).length){
+      html+='<div class="inbox-group"><h3>目前處理（最多 3 筆）</h3><div class="projects compact-brief">'+(brief.processingTop||[]).map(function(item){return '<button type="button" class="project-card full progress-card" data-inbox-work="'+esc(item.id)+'"><h3>'+esc((item.projectName||'')+'｜'+item.title)+'</h3><div class="meta">期限 '+esc(item.dueDate||'未設')+'</div></button>';}).join('')+'</div></div>';
+    }
+    if(!data.counts||!data.counts.total){html+='<div class="empty">目前沒有指派給你的進行中工作。可到「進度追蹤」依資料夾缺口建立下一步，或新增工作時選標準樣板。</div>';$('#inboxView').innerHTML=html;return;}
     order.forEach(function(pair){
       var items=(data.groups&&data.groups[pair[0]])||[];
       html+='<div class="inbox-group"><h3>'+esc(pair[1])+' <span class="badge">'+items.length+'</span></h3>'+(items.length?items.map(row).join(''):'<div class="empty compact">無</div>')+'</div>';
@@ -323,7 +378,7 @@
     $('#inboxView').innerHTML=html;
     $$('[data-inbox-work]',$('#inboxView')).forEach(function(el){
       el.onclick=function(){
-        var all=[];
+        var all=(brief.processingTop||[]).slice();
         Object.keys(data.groups||{}).forEach(function(key){all=all.concat(data.groups[key]||[]);});
         var work=all.filter(function(item){return item.id===el.dataset.inboxWork;})[0];
         if(work)openWork(work);
@@ -415,10 +470,26 @@
     var stages=board.stages||[];
     var html='<div class="section-head"><div><h3>雲端資料夾進度</h3><div class="meta">依 01～07 資料夾檔案＋工作／回報推估，不自動改專案狀態。'+(board.scannedAt?' 掃描：'+esc(board.scannedAt):'')+'</div></div><div><b class="progress-score">'+esc(board.score)+'%</b></div></div>';
     html+='<div class="progress-next"><b>下一步：</b>'+esc(board.nextAction)+'</div>';
+    html+='<div class="stage-actions" style="margin:8px 0 12px"><button type="button" class="button small primary" id="seedTemplatesBtn">套用缺件樣板</button><span class="meta">依系統類型為仍缺證據的階段建立標準追蹤事項</span></div>';
     html+='<div class="stage-grid">'+stages.map(function(stage){
       return '<div class="stage-card state-'+esc(stage.state)+'"><div class="stage-head"><b>'+esc(stage.label)+'</b><span class="badge">'+esc(stageStateLabel(stage.state))+'</span></div><div class="meta">資料夾檔案 '+esc(stage.fileCount)+'｜工作 '+esc(stage.activeCount)+' 進行 / '+esc(stage.doneCount)+' 完成｜回報 '+esc(stage.reportCount)+'</div>'+(stage.latestFile?'<div class="meta">最新：'+esc(stage.latestFile)+'</div>':'')+'<div class="stage-actions">'+(stage.folderUrl?'<a class="link" target="_blank" href="'+safeUrl(stage.folderUrl)+'">開資料夾</a>':'')+(stage.state==='empty'||stage.state==='in_progress'?'<button type="button" class="button small ghost" data-ensure-stage="'+esc(stage.id)+'">建立追蹤事項</button>':'')+'</div></div>';
     }).join('')+'</div>';
     box.innerHTML=html;
+    if($('#seedTemplatesBtn')){
+      $('#seedTemplatesBtn').onclick=async function(){
+        if(!window.confirm('只對「尚缺雲端證據」的階段建立標準工作樣板？\n已有同階段工作或已有檔案的階段會跳過。'))return;
+        busy(true);
+        try{
+          var response=await api('seedWorkTemplates',{projectId:board.projectId,onlyGaps:true});
+          if(!response.ok)throw new Error(response.message);
+          toast('已建立 '+response.data.createdCount+' 筆樣板工作（跳過 '+response.data.skippedCount+'）');
+          var detail=await api('project',{projectId:board.projectId});
+          if(detail.ok){state.projectDetail=detail.data;renderProjectDialog();}
+          await load();
+        }catch(error){toast(error.message||error,true);}
+        finally{busy(false);}
+      };
+    }
     $$('[data-ensure-stage]',box).forEach(function(button){
       button.onclick=async function(){
         busy(true);

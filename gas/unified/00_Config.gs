@@ -1,6 +1,6 @@
-/** PSS AI-PMO V23.1.0 Unified - Drive folder progress board + clearer daily tracking. */
+/** PSS AI-PMO V23.2.0 Unified - work templates + daily inbox clarity. */
 var PMO_V21 = Object.freeze({
-  VERSION: '23.1.0',
+  VERSION: '23.2.0',
   SOURCE_DATABASE_ID: '11ndvBcV0geEF7oJv1kX28BuC4_kAKnl37wUhL-Rx27g',
   PROGRESS_DATABASE_ID: '1Oh2pnlZwusM7E-CKMr-eYYYOToTzHtJge_2yiqEypcM',
   LARK_BASE_URL: 'https://ejpl6m9o2b9n.jp.larksuite.com/base/FolabGHukaF07TslCOujualppig?table=tbl5FjhbqPncSLAB&view=vew1h0XWyw',

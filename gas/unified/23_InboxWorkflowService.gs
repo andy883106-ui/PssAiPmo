@@ -12,6 +12,7 @@ function getMyWorkInboxV23(payload) {
     var reports = v21LoadReports_();
     var groups = {
       overdue: [],
+      needsReportToday: [],
       dueSoon: [],
       todayAssigned: [],
       followUp: [],
@@ -20,28 +21,44 @@ function getMyWorkInboxV23(payload) {
     works.forEach(function(item) {
       var due = v21Text_(item.dueDate);
       var created = v21Date_(item.createdAt) || v21Text_(item.startDate);
-      var isFollow = item.type === '後續追蹤' || item.status === '事項';
-      if (due && due < today) groups.overdue.push(item);
-      else if (due && due <= weekAhead) groups.dueSoon.push(item);
-      else if (created === today) groups.todayAssigned.push(item);
-      else if (isFollow) groups.followUp.push(item);
-      else groups.inProgress.push(item);
+      var isFollow = item.type === '後續追蹤' || item.type === '階段追蹤' || item.status === '事項';
       item.recentReports = reports.filter(function(report) {
         return v21Text_(report.relatedWorkId) === item.id;
       }).sort(function(a, b) {
         return v21Text_(b.date).localeCompare(v21Text_(a.date));
       }).slice(0, 3);
+      var reportedToday = item.recentReports.some(function(report) {
+        return v21Text_(report.date) === today;
+      });
+      item.reportedToday = reportedToday;
+      if (due && due < today) groups.overdue.push(item);
+      else if (!reportedToday && item.status === '目前處理') groups.needsReportToday.push(item);
+      else if (due && due <= weekAhead) groups.dueSoon.push(item);
+      else if (created === today) groups.todayAssigned.push(item);
+      else if (isFollow) groups.followUp.push(item);
+      else groups.inProgress.push(item);
     });
     function sortDue(a, b) {
       return (a.dueDate || '9999-12-31').localeCompare(b.dueDate || '9999-12-31');
     }
     Object.keys(groups).forEach(function(key) { groups[key].sort(sortDue); });
+    var processing = works.filter(function(item) { return item.status === '目前處理'; }).sort(sortDue).slice(0, 3);
     return {
       user: identity.email,
       names: names,
       today: today,
+      identityMatched: names.length > 1,
+      dailyBrief: {
+        overdue: groups.overdue.length,
+        needsReportToday: groups.needsReportToday.length,
+        dueSoon: groups.dueSoon.length,
+        processingTop: processing.map(function(item) {
+          return { id: item.id, title: item.title, projectName: item.projectName, dueDate: item.dueDate, status: item.status };
+        })
+      },
       counts: {
         overdue: groups.overdue.length,
+        needsReportToday: groups.needsReportToday.length,
         dueSoon: groups.dueSoon.length,
         todayAssigned: groups.todayAssigned.length,
         followUp: groups.followUp.length,
