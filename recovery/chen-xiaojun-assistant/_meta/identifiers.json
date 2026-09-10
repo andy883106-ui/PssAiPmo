@@ -1,0 +1,30 @@
+{
+  "package_name": "chen-xiaojun-assistant",
+  "live_url": "https://andy88310620260906.vercel.app/",
+  "vercel_project": "https://vercel.com/andy883106/andy88310620260906",
+  "deployment_id": "ECrYi1D98",
+  "localStorage_keys": [
+    "jun-ios-hint",
+    "pika-work-logs-v1"
+  ],
+  "api_paths_in_bundle": [
+    "/api/xiaojun"
+  ],
+  "api_route_path_inferred_by_agent": "/api/gas",
+  "api_route_path_from_live_bundle": "/api/xiaojun",
+  "env_vars": [
+    "XIAOJUN_GAS_URL",
+    "XIAOJUN_GAS_SECRET"
+  ],
+  "animated_asset": "/chen-xiaojun-animated.webp",
+  "setup_secret_hint_in_bundle": "xj-pmo-9k4w2n7h",
+  "emails_mentioned": [
+    "andy883106@gmail.com"
+  ],
+  "aliases": [
+    "陳小均助理",
+    "chen-xiaojun-assistant",
+    "pika-log",
+    "pika-work-logs-v1"
+  ]
+}
