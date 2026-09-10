@@ -1,0 +1,75 @@
+{
+  "analyzed_file": "site-export/live/_next/static/immutable/chunks/22jftbwgge83f.js",
+  "size": 528523,
+  "likely_components": [
+    "Button",
+    "DeskErrorBoundary",
+    "Error",
+    "NoticeBar",
+    "Panel",
+    "RoleDesk",
+    "Tabs"
+  ],
+  "localStorage_keys": [
+    "jun-ios-hint",
+    "pika-work-logs-v1"
+  ],
+  "api_paths": [
+    "/api/xiaojun"
+  ],
+  "sample_zh_strings": [
+    "===e.role?`陳小均：\n${e.text}`:`彥均：\n${e.text}`).join(",
+    "下午還沒看到安排。請按上面「工作回報」只補 13:30 之後，陳小均會自動併進今天工作事項。",
+    "下午開始。請按上面「工作回報」補 13:30 之後要做的事，陳小均會併進今天工作事項。",
+    "先照說明部署陳小均雲端程式，再把 /exec 網址和密鑰貼在這裡。密鑰請用：xj-pmo-9k4w2n7h",
+    "先看這台裝置上的附件。接上雲端後會存到陳小均資料夾。",
+    "只看進行中、施作、修繕、下單、議價、驗收、請款。報價、教育訓練、NAS 不放在陳小均。",
+    "嗨，我在。需要陳小均為您服務什麼？可以直接回報、派工，或點我。",
+    "嗨，我是陳小均",
+    "嗨，我是陳小均，彥均的助手分身。需要陳小均為您服務什麼？",
+    "嗨，我是陳小均，彥均的助手分身。點我或按「呼叫小均」，我會問需要為您服務什麼。回報工作我會一題一題問到完整，再請你確認。",
+    "對話寫進陳小均資料夾。工作事項與回報寫進主程式資料庫的 V21_工作事項、V21_回報紀錄。重新部署雲端程式後才會即時寫回試算表。",
+    "我是陳小均，彥均的助手分身。每天工作、派工、圖面都可以交給我。需要陳小均為您服務什麼？",
+    "按「變成訪客」去問陳小均，或按「變成某人」進該員工的回報與日曆。再按「回總網」。",
+    "每人詢問與陳小均回覆（可再回覆）",
+    "現在還不到 09:00，陳小均會等到上班再問。",
+    "訪客對話含關鍵字或 #關鍵字 時，陳小均會優先用你教的標準回覆，不會先當成記一筆。可隨時改。",
+    "訪客進入陳小均對話，交代、預約、查專案。員工用 Email 登入，直接進入自己的待辦、回報與訊息。",
+    "設定幾點自動 @誰、交代什麼。時間到了，陳小均會寫進對方的訊息，並建立一筆交代事項。",
+    "請允許麥克風，才能講給陳小均聽。",
+    "請允許麥克風，才能講給陳小均聽。可到設定 → Safari → 麥克風打開。",
+    "這不是每天回報。要先鎖自己的時段時才用：按「預排時段」選日期和時間。之後若有人預約同一時段，陳小均會說你那時在做什麼。",
+    "雲端已接通。訪客的詢問、陳小均的回覆，會寫進「對話紀錄」；你教的答案會寫進「回覆資料庫」。"
+  ],
+  "css_class_hints": [
+    "chen",
+    "chen-xiaojun-assistant",
+    "desk-card",
+    "desk-layout",
+    "desk-main",
+    "desk-rail",
+    "desktop-grid",
+    "notice-bar",
+    "notice-label",
+    "notice-speak",
+    "notice-track",
+    "notice-viewport",
+    "pmo-complete",
+    "pmo-group",
+    "pmo-list",
+    "pmo-overdue",
+    "role"
+  ],
+  "action_hints": [
+    "assign",
+    "book",
+    "dispatch",
+    "follow",
+    "help",
+    "install",
+    "progress",
+    "project",
+    "report",
+    "self-plan"
+  ]
+}

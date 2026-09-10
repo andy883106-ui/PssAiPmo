@@ -1,0 +1,43 @@
+[
+  {
+    "label": "Agent scaffold file list after writing recovered files",
+    "source": "agent tool result (msg 163)",
+    "paths": [
+      "components.json",
+      "eslint.config.mjs",
+      "package.json",
+      "README_RECOVERY.md",
+      "src/app/api/gas/route.ts",
+      "tsconfig.json"
+    ]
+  },
+  {
+    "label": "Files agent requested user to paste next (known missing)",
+    "source": "assistant text (msg 165)",
+    "paths": [
+      "src/app/page.tsx",
+      "src/app/layout.tsx",
+      "src/app/globals.css",
+      "src/components/RoleDesk*",
+      "src/components/NoticeBar*",
+      "src/lib/*",
+      "next.config.*",
+      "postcss.config.*",
+      "public/*"
+    ]
+  },
+  {
+    "label": "Live site public assets referenced",
+    "source": "agent scrape commands (msgs 109, 101, 94)",
+    "paths": [
+      "/",
+      "/manifest.webmanifest",
+      "/favicon.svg",
+      "/favicon.ico",
+      "/apple-touch-icon.png",
+      "/chen-xiaojun-animated.webp",
+      "/_next/static/immutable/chunks/*",
+      "/_next/static/immutable/media/*"
+    ]
+  }
+]

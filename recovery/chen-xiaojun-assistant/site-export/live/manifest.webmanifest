@@ -1,0 +1,33 @@
+{
+  "name": "陳小均助理",
+  "short_name": "小均",
+  "description": "跟陳小均說話就能記下或查出工作紀錄",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#eef4ea",
+  "theme_color": "#7a9b6d",
+  "lang": "zh-Hant",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
