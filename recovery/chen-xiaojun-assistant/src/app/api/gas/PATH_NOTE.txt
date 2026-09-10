@@ -1,0 +1,3 @@
+Agent inferred this path as src/app/api/gas/route.ts from the pasted route body.
+Live compiled bundle references fetch/call to "/api/xiaojun" instead.
+Prefer src/app/api/xiaojun/route.ts for reconstruction.
