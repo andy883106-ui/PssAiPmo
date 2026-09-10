@@ -1,17 +1,22 @@
-# 復原封存／遺失專案
+# 復原：之前製作的「陳小均」專案
 
-## 陳小均助理（chen-xiaojun-assistant / pika-log）
+目標專案：**陳小均助理**（`chen-xiaojun-assistant`，別名 pika-log）
 
-此目錄為從先前對話貼文與線上站台（https://andy88310620260906.vercel.app/）復原的內容。
+- 線上仍在運行：https://andy88310620260906.vercel.app/
+- 本目錄 = 目前能自動找回的設定、API、與編譯版站台匯出
 
-### 已復原
-- 專案設定：`package.json`、`tsconfig.json`、`eslint.config.mjs`、`components.json`
-- API：`src/app/api/xiaojun/route.ts`、`src/app/api/gas/route.ts`
-- 線上站編譯匯出：`site-export/live/`（可離線開啟 `index.html` 瀏覽 UI）
-- 元件／字串線索：`COMPONENT_NAMES.txt`、`BUNDLE_STRINGS_AND_SYMBOLS.md`
+## 怎麼用
 
-### 仍缺（完整原始碼）
-- `src/app/page.tsx`、`layout.tsx`、components、`src/lib`、`public/` 原始資產
-- 請從 Vercel Deployments → Source，或私有 repo `pika-log` 下載完整 ZIP 後覆蓋此目錄
+1. 下載 artifact：`chen-xiaojun-assistant-recovery.zip`
+2. 解壓後看 `chen-xiaojun-assistant/`
+3. 瀏覽編譯版 UI：開啟 `chen-xiaojun-assistant/site-export/live/index.html`（或用本機靜態伺服器）
+4. 完整可編譯原始碼仍缺時：到 Vercel 專案 `andy88310620260906` → Deployments → **Source** 整包下載，覆蓋此目錄
+
+## 已復原
+
+- 設定：`package.json`、`tsconfig.json`、`eslint.config.mjs`、`components.json`
+- API：`src/app/api/xiaojun/route.ts`
+- 編譯站台：`site-export/live/`
+- 清單：`RECOVERY_MANIFEST.md`
 
 詳見 `chen-xiaojun-assistant/RECOVERY_MANIFEST.md`。
