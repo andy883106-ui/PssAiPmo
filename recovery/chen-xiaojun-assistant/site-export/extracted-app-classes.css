@@ -1,0 +1,75 @@
+/* Recovered class rule fragments from compiled CSS (not original source) */
+
+.desk-actions{flex-wrap:wrap;gap:.4rem;display:flex}
+
+.desk-card h2,.thread-card h3{margin:0 0 .35rem;font-size:1.05rem;font-weight:800}
+
+.desk-card,.thread-card{background:#fffdf8;border-radius:1.15rem;margin-bottom:.85rem;padding:1rem;box-shadow:0 0 0 1px #7a9b6d29}
+
+.desk-head h1{margin:.15rem 0 .35rem;font-size:1.45rem;font-weight:800}
+
+.desk-head{justify-content:space-between;align-items:flex-start;gap:1rem;margin-bottom:1rem;display:flex}
+
+.desk-kicker{color:#576953;color:lab(42.4984% -10.3838 9.91943);margin:0;font-size:.78rem}
+
+.desk-layout{grid-template-columns:1fr;gap:1rem;min-width:0;display:grid}
+
+.desk-layout{grid-template-columns:minmax(17.5rem,22rem) minmax(0,1fr);align-items:start;gap:1.2rem}
+
+.desk-main .report-box .template-area{min-height:18rem}
+
+.desk-rail,.desk-main{min-width:0}
+
+.desk-rail{max-height:calc(100dvh - 1.4rem);position:sticky;top:.7rem;overflow:auto}
+
+.desk-shell .desk-card{padding:1.25rem 1.4rem}
+
+.desk-shell{padding-inline:1.5rem}
+
+.desk-shell{width:100%;max-width:none;padding:max(.85rem, env(safe-area-inset-top)) max(1.1rem, env(safe-area-inset-right)) 3rem max(1.1rem, env(safe-area-inset-left));margin:0}
+
+.notice-bar{background:color-mix(in oklab, var(--card) 88%, #cfe0c4)}
+
+.notice-bar{background:var(--card)}
+
+.notice-bar{border-bottom:1px solid color-mix(in oklab, var(--foreground) 10%, transparent)}
+
+.notice-bar{box-shadow:0 4px 14px #465a3214}
+
+.notice-bar{z-index:80;border-bottom:1px solid var(--foreground);align-items:center;gap:.55rem;height:2.2rem;padding:0 .75rem 0 .85rem;display:flex;position:sticky;top:0}
+
+.notice-label{letter-spacing:.12em;color:#314a2b;color:lab(28.7967% -15.4648 15.3635);flex:none;font-size:.72rem;font-weight:800}
+
+.notice-speak{color:#fff;cursor:pointer;background:#4d6b45;border:0;border-radius:999px;flex:none;align-items:center;gap:.2rem;height:1.6rem;padding:0 .45rem;font-size:.72rem;font-weight:700;display:inline-flex}
+
+.notice-track span{color:#283824;color:lab(21.6064% -10.3398 10.0915);padding-right:4.5rem;font-size:.82rem;font-weight:600;display:inline-block}
+
+.notice-track{animation:none}
+
+.notice-track{white-space:nowrap;margin:0;animation:28s linear infinite notice-marquee;display:inline-flex}
+
+.notice-viewport{flex:1;min-width:0;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,#0000,#000 8% 92%,#0000);mask-image:linear-gradient(90deg,#0000,#000 8% 92%,#0000)}
+
+.pmo-complete{gap:.4rem;display:grid}
+
+.pmo-group{margin-top:.7rem}
+
+.pmo-links a{color:#3d5a36;text-decoration:underline}
+
+.pmo-links{gap:.45rem;margin:.6rem 0 0;display:grid}
+
+.pmo-list li span{color:#6f6149;color:lab(42.0706% 3.10344 15.7788);font-size:.8rem}
+
+.pmo-list li strong{font-size:.95rem}
+
+.pmo-list li{background:#f7f3ea;border-radius:.85rem;gap:.25rem;padding:.65rem .75rem;display:grid}
+
+.pmo-list{gap:.55rem;margin:.35rem 0 0;padding:0;list-style:none;display:grid}
+
+.pmo-overdue{box-shadow:inset 3px 0 #c2410c}
+
+.pmo-source{margin:.25rem 0 .4rem;font-size:.8rem;font-weight:700}
+
+body:has(.notice-bar){--notice-h:2.2rem}
+
+html.kb-open .notice-bar,html.kb-open .jun-buddy{display:none!important}

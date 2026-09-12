@@ -2,3 +2,4 @@ node_modules/
 npm-debug.log*
 .clasprc.json
 .DS_Store
+chen-xiaojun-assistant/tsconfig.tsbuildinfo
