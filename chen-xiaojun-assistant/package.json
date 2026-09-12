@@ -1,6 +1,6 @@
 {
   "name": "chen-xiaojun-assistant",
-  "version": "0.1.0",
+  "version": "3.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev --port 43147 --hostname 0.0.0.0",

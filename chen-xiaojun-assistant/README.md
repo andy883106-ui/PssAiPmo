@@ -1,23 +1,16 @@
-# 陳小均助理（復原版）
+# 陳小均助理 V3
 
-可運行的 Next.js 復原專案，依線上站 https://andy88310620260906.vercel.app/ 與先前從 Vercel Source 貼回的設定重建。
+可運行的 Next.js 專案（訪客對話 + 員工工作台 + 管理者總網）。
 
-## 已復原
+線上參考站：https://andy88310620260906.vercel.app/
 
-- 身分閘門（訪客／員工）
-- 陳小均對話、快捷選項、本機工作紀錄（`pika-work-logs-v1`）
-- 公告列、角色動畫、語音唸讀／語音輸入（瀏覽器支援時）
-- `/api/xiaojun` GAS 代理（環境變數或總網設定）
-- 線上站公開資源（圖示、動畫 webp、manifest）
+## V3 更新內容
 
-## 尚未取得的原始碼
-
-完整原始 `RoleDesk` / PMO 派工／圖面／Sheets 同步等，仍在：
-
-1. Vercel → `andy88310620260906` → Deployments → Source
-2. 私人 GitHub `andy883106/pika-log`（需正確帳號）
-
-本目錄是**功能對齊的復原版**，不是 bit-identical 原始 repo。
+- **管理者總網**：功能選單（進度、流程、搜尋、回報、對話、交代、人員、切換身分、雲端…）
+- **員工工作台**：今日交代、工作回報、預排事項
+- **訪客對話**：沿用小均對話／本機紀錄／語音
+- **身分切換**：管理者可暫時變成訪客或員工驗收流程
+- 版本號 `3.0.0`
 
 ## 本機執行
 
@@ -29,13 +22,15 @@ npm run dev
 
 開啟 http://localhost:43147
 
-可選環境變數（`.env.local`）：
+可選 `.env.local`：
 
 ```
 XIAOJUN_GAS_URL=https://script.google.com/macros/s/.../exec
 XIAOJUN_GAS_SECRET=your-secret
 ```
 
-## 與 recovery/ 的關係
+管理者請用預設管理員 Gmail（`andy883106@gmail.com`，可在本機 localStorage `jun-admin-email-v1` 變更）登入進入總網。
 
-`../recovery/chen-xiaojun-assistant/` 保留線上站靜態匯出、bundle 分析與復原清單，供對照。
+## 說明
+
+完整原始 RoleDesk／PMO 雲端模組仍建議以 Vercel Source 或私有 `pika-log` 覆寫補強；本 V3 為可運行升級版，總網部分模組先提供本機骨架，接上 GAS 後可擴充。

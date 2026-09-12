@@ -88,7 +88,14 @@ export function rememberLoginEmail(email: string) {
 
 export type Session =
   | { role: "visitor"; name: string; phone: string; visitorId: string }
-  | { role: "staff"; email: string; name: string };
+  | { role: "staff"; email: string; name: string }
+  | { role: "admin"; email: string; name: string };
+
+/** Admin impersonation target (visitor or staff seat). */
+export type ActingIdentity =
+  | { role: "visitor"; name: string; phone: string; visitorId: string }
+  | { role: "staff"; email: string; name: string }
+  | null;
 
 export function loadSession(): Session | null {
   try {
@@ -111,4 +118,59 @@ export function saveSession(session: Session | null) {
 export function matchStaffByEmail(email: string, seats = loadStaffSeats()) {
   const target = normEmail(email);
   return seats.find((s) => s.enabled && normEmail(s.email) === target) ?? null;
+}
+
+export function isAdminEmail(email: string) {
+  return normEmail(email) === adminEmail();
+}
+
+export function loginByEmail(email: string): Session | { error: string } {
+  const normalized = normEmail(email);
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized)) {
+    return { error: "請輸入正確的 Gmail 格式。" };
+  }
+  if (isAdminEmail(normalized)) {
+    const seat = matchStaffByEmail(normalized);
+    return {
+      role: "admin",
+      email: normalized,
+      name: seat?.name || OWNER_NAME,
+    };
+  }
+  const seat = matchStaffByEmail(normalized);
+  if (!seat) {
+    return { error: "這組 Email 還沒登記。請用已登記的 Gmail，或請管理者開通。" };
+  }
+  return { role: "staff", email: seat.email, name: seat.name };
+}
+
+export function loadActing(): ActingIdentity {
+  try {
+    const raw = window.localStorage.getItem(ACTING_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as ActingIdentity;
+  } catch {
+    return null;
+  }
+}
+
+export function saveActing(acting: ActingIdentity) {
+  if (!acting) {
+    window.localStorage.removeItem(ACTING_KEY);
+    return;
+  }
+  window.localStorage.setItem(ACTING_KEY, JSON.stringify(acting));
+}
+
+/** Effective desk identity: admin can act as visitor/staff. */
+export function effectiveIdentity(session: Session): Session {
+  if (session.role !== "admin") return session;
+  const acting = loadActing();
+  if (!acting) return session;
+  return acting;
+}
+
+export function clearAuth() {
+  saveSession(null);
+  saveActing(null);
 }

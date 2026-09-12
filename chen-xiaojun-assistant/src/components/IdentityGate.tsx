@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   loadSession,
-  matchStaffByEmail,
+  loginByEmail,
   rememberLoginEmail,
   rememberedLoginEmails,
   saveSession,
@@ -47,16 +47,11 @@ export function IdentityGate({ onReady }: Props) {
       <StaffForm
         onBack={() => setMode("pick")}
         onSubmit={(email) => {
-          const seat = matchStaffByEmail(email);
-          if (!seat) return "這組 Email 還沒登記。請用已登記的 Gmail，或請管理者開通。";
+          const result = loginByEmail(email);
+          if ("error" in result) return result.error;
           rememberLoginEmail(email);
-          const session: Session = {
-            role: "staff",
-            email: seat.email,
-            name: seat.name,
-          };
-          saveSession(session);
-          onReady(session);
+          saveSession(result);
+          onReady(result);
           return null;
         }}
       />
@@ -69,7 +64,7 @@ export function IdentityGate({ onReady }: Props) {
         <p className="app-kicker">陳小均</p>
         <h1>請先確認身分</h1>
         <p className="guide-body">
-          訪客進入陳小均對話，交代、預約、查專案。員工用 Email 登入，直接進入自己的待辦、回報與訊息。
+          訪客進入陳小均對話，交代、預約、查專案。員工用 Email 登入工作台；管理者 Email 進入 V3 總網。
         </p>
         <div className="guide-actions">
           <Button type="button" className="h-12 flex-1" onClick={() => setMode("visitor")}>

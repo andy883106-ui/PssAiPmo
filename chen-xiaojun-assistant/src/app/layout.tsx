@@ -14,9 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "陳小均助理",
-  description: "陳小均總網：訪客詢問與記錄，工程師回覆，管理者用 Gmail 進入並切換身分測試。",
-  applicationName: "陳小均助理",
+  title: "陳小均助理 V3",
+  description: "陳小均助理 V3 總網：訪客對話、員工工作台、管理者總網（交代／回報／雲端）。",
+  applicationName: "陳小均助理 V3",
   appleWebApp: {
     title: "小均",
     statusBarStyle: "default",

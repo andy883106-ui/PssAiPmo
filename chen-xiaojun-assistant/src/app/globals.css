@@ -489,3 +489,134 @@ html.kb-open .jun-buddy {
     animation: none !important;
   }
 }
+
+/* ===== 陳小均助理 V3 desk / admin ===== */
+.desk-shell {
+  min-height: 100dvh;
+  padding: 1rem 1rem 2rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.desk-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.desk-header h1 {
+  margin: 0.15rem 0 0;
+  font-size: 1.55rem;
+}
+
+.admin-menu-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.85rem;
+}
+
+.admin-menu-card {
+  text-align: left;
+  border: 1px solid var(--border);
+  background: linear-gradient(165deg, #f7fbf4, #eef5ea);
+  border-radius: 1rem;
+  padding: 1rem 1.05rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.admin-menu-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(56, 84, 48, 0.08);
+}
+
+.admin-menu-card strong {
+  font-size: 1rem;
+}
+
+.admin-menu-card span {
+  color: var(--muted-foreground);
+  font-size: 0.88rem;
+  line-height: 1.35;
+}
+
+.desk-layout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 0.9rem;
+}
+
+.desk-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  padding: 1rem;
+}
+
+.desk-card h2 {
+  margin: 0 0 0.65rem;
+  font-size: 1.05rem;
+}
+
+.stack-gap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.form-grid {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.plain-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.plain-list-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: flex-start;
+  padding: 0.7rem 0.8rem;
+  border-radius: 0.75rem;
+  background: #f3f8ef;
+  border: 1px solid #d7e5d1;
+}
+
+.plain-list-item p {
+  margin: 0.2rem 0 0;
+  color: var(--muted-foreground);
+  font-size: 0.9rem;
+}
+
+.muted {
+  color: var(--muted-foreground);
+}
+
+.admin-chat-bar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  padding: 0.4rem 0.75rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.admin-chat-bar .chip {
+  border: 1px solid var(--border);
+  background: #fff;
+  border-radius: 999px;
+  padding: 0.35rem 0.8rem;
+  font-size: 0.85rem;
+}
